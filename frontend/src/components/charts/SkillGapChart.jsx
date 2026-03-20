@@ -41,11 +41,17 @@ export default function SkillGapChart({ data }) {
     </div>
   )
 
-  const chartData = data.map(d => ({
-    ...d,
-    displayName: d.skill.length > 12 ? d.skill.slice(0, 12) + '…' : d.skill,
-    value: Math.round(d.gap_score * 100),
-  }))
+  const chartData = data.map(d => {
+    const skillName = d.skill || d.name || 'Unknown'
+    const gapScore  = typeof d.gap_score === 'number' ? d.gap_score : 0.5
+    return {
+      ...d,
+      skill:       skillName,
+      gap_score:   gapScore,
+      displayName: skillName.length > 12 ? skillName.slice(0, 12) + '…' : skillName,
+      value:       Math.round(gapScore * 100),
+    }
+  })
 
   return (
     <div className="w-full h-56">

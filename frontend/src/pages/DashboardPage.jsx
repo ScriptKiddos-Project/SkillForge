@@ -1,3 +1,4 @@
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import { usePathwayStore } from '../store/pathwayStore'
@@ -129,11 +130,53 @@ function ActiveModuleCard({ step, navigate }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { pathway, skillProfile } = usePathwayStore()
-  const { user } = useAuthStore()
+  const { pathway, skillProfile, setPathway, setSkillProfile } = usePathwayStore()
+  const { user, isDemo } = useAuthStore()
 
-  const profile = skillProfile || demoSkillProfile
-  const pw = pathway || demoPathway
+  // Fetch from backend on mount if store is empty (e.g. after page refresh)
+  // This ensures dashboard always shows THIS user's data, never the demo fallback
+  const [loading, setLoading] = React.useState(false)
+  React.useEffect(() => {
+    if (isDemo || pathway || !user?.id) return
+    setLoading(true)
+    import('../lib/api').then(({ default: api }) => {
+      api.get(`/api/pathway/${user.id}`)
+        .then(res => {
+          setPathway(res.data)
+          // Also try to get skill profile
+          return api.get(`/api/analyze/skill-profile/${user.id}`).catch(() => null)
+        })
+        .then(profileRes => { if (profileRes) setSkillProfile(profileRes.data) })
+        .catch(console.error)
+        .finally(() => setLoading(false))
+    })
+  }, [user?.id])
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-full">
+          <p className="font-mono text-sm" style={{ color: '#00f5ff' }}>⟳ Loading your pathway...</p>
+        </div>
+      </AppLayout>
+    )
+  }
+
+  const profile = skillProfile || (isDemo ? demoSkillProfile : null)
+  const pw = pathway || (isDemo ? demoPathway : null)
+
+  if (!pw) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center h-full gap-4">
+          <p className="font-mono text-sm text-gray-500">No pathway found.</p>
+          <button onClick={() => navigate('/onboarding')} className="btn-neon-solid px-6 py-2">
+            START ONBOARDING →
+          </button>
+        </div>
+      </AppLayout>
+    )
+  }
 
   const activeStep = pw.steps.find(s => s.status === 'active')
   const completedCount = pw.steps.filter(s => s.status === 'complete').length
@@ -173,7 +216,15 @@ export default function DashboardPage() {
                 <span className="text-xs font-mono text-gray-500">SKILL VECTOR MAPPING</span>
                 <span className="hex-id">∿ Current ↑</span>
               </div>
-              <SkillGapChart data={profile.gap_skills} />
+              <SkillGapChart data={
+                (profile?.gap_skills || pw?.steps || []).map(s => ({
+                  skill:           s.name  || s.skill || 'Unknown',
+                  gap_score:       s.knowledge_state != null ? (1 - s.knowledge_state) : 0.8,
+                  confidence:      Math.round((s.confidence || 0.75) * 100),
+                  category:        s.category || 'general',
+                  priority:        s.priority != null ? s.priority + 1 : 1,
+                }))
+              } />
             </div>
 
             {/* Active module */}

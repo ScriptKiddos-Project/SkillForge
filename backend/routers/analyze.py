@@ -302,3 +302,31 @@ async def stream_analysis(
             "Connection":        "keep-alive",
         },
     )
+
+
+# ── GET /analyze/skill-profile/{user_id} ─────────────────────────────────────
+@router.get("/skill-profile/{user_id}")
+async def get_skill_profile(
+    user_id:      str,
+    current_user= Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Returns the skill profile (resume_skills, jd_skills, gap_skills) for a user.
+    Used by DashboardPage to show the radar/gap chart with real data.
+    """
+    from core.auth import verify_user_access
+    verify_user_access(user_id, current_user)
+
+    from models.skill_profile import SkillProfile
+    profile = db.query(SkillProfile).filter(SkillProfile.user_id == user_id).first()
+
+    if profile is None:
+        raise HTTPException(status_code=404, detail="Skill profile not found.")
+
+    return {
+        "user_id":       user_id,
+        "resume_skills": profile.resume_skills or [],
+        "jd_skills":     profile.jd_skills or [],
+        "gap_skills":    profile.gap_skills or [],
+    }

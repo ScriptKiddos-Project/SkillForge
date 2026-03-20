@@ -1,14 +1,10 @@
 /**
  * pages/AnalyzingPage.jsx
  *
- * FIXES APPLIED:
- *   Bug #8: SSE onStage callback read `data.stage_id - 1` but backend sends
- *           `{ stage: "...", index: 2, done: false }`.
- *           Fixed to use `data.index` directly.
- *
- *   Bug #7 (frontend side): The done check is now in api.js (createSSEStream),
- *           so onComplete is only called when done===true. No change needed here
- *           beyond reading the correct index field.
+ * KEY FIX: After SSE done===true, fetch the user's actual pathway and skill
+ * profile from the backend BEFORE navigating to dashboard.
+ * Previously it just navigated immediately — so the dashboard showed stale
+ * Zustand data (or demoPathway fallback) instead of the user's real results.
  */
 
 import { useState, useEffect } from 'react'
@@ -16,6 +12,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { usePathwayStore } from '../store/pathwayStore'
 import { createSSEStream } from '../lib/api'
+import api from '../lib/api'
 
 const SSE_STAGES = [
   { id: 1, key: 'extracting', label: 'Extracting Skills',    sub: 'PyMuPDF → spaCy noun chunks → O*NET cosine match → LLaMA confirmation', color: '#00f5ff' },
@@ -49,11 +46,45 @@ const DEMO_LOGS = [
 
 export default function AnalyzingPage() {
   const [currentStage, setCurrentStage] = useState(0)
-  const [logs, setLogs]   = useState([])
-  const [done, setDone]   = useState(false)
-  const navigate          = useNavigate()
-  const [params]          = useSearchParams()
-  const { isDemo }        = useAuthStore()
+  const [logs, setLogs]         = useState([])
+  const [done, setDone]         = useState(false)
+  const [fetching, setFetching] = useState(false)
+  const navigate                = useNavigate()
+  const [params]                = useSearchParams()
+  const { isDemo, user }        = useAuthStore()
+  const { setPathway, setSkillProfile } = usePathwayStore()
+
+  // ── After pipeline finishes: fetch THIS user's pathway from DB ─────────────
+  async function fetchAndNavigate() {
+    setFetching(true)
+    setLogs(prev => [...prev, '> Fetching your personalised pathway from DB...'])
+    try {
+      const userId = user?.id
+
+      // Fetch the pathway that was just saved for this specific user
+      const pathwayRes = await api.get(`/api/pathway/${userId}`)
+      setPathway(pathwayRes.data)
+      setLogs(prev => [...prev, `> Pathway loaded: ${pathwayRes.data.steps?.length} personalised steps ✓`])
+
+      // Fetch skill profile (gap skills for the radar chart on dashboard)
+      try {
+        const profileRes = await api.get(`/api/analyze/skill-profile/${userId}`)
+        setSkillProfile(profileRes.data)
+      } catch {
+        // non-critical — dashboard can still work without it
+      }
+
+      setLogs(prev => [...prev, '> STATUS: COMPLETE — navigating to your dashboard...'])
+      setTimeout(() => navigate('/dashboard'), 1200)
+
+    } catch (err) {
+      console.error('Fetch pathway failed:', err)
+      setLogs(prev => [...prev, '> WARNING: Using cached data — navigating...'])
+      setTimeout(() => navigate('/dashboard'), 1000)
+    } finally {
+      setFetching(false)
+    }
+  }
 
   useEffect(() => {
     if (isDemo || !params.get('job_id')) {
@@ -64,11 +95,10 @@ export default function AnalyzingPage() {
     const jobId   = params.get('job_id')
     const cleanup = createSSEStream(
       jobId,
-      // FIX #8: backend sends data.index (0-based), not data.stage_id
       (data) => setCurrentStage(data.index ?? 0),
       () => {
         setDone(true)
-        setTimeout(() => navigate('/dashboard'), 2000)
+        fetchAndNavigate()   // ← fetch real data, THEN navigate
       },
       (err) => {
         console.error('SSE error:', err)
@@ -81,53 +111,39 @@ export default function AnalyzingPage() {
   function simulateDemoSSE() {
     let stageIdx = 0
     let logIdx   = 0
-
     const logInterval = setInterval(() => {
-      if (logIdx < DEMO_LOGS.length) {
-        setLogs(prev => [...prev, DEMO_LOGS[logIdx]])
-        logIdx++
-      }
+      if (logIdx < DEMO_LOGS.length) { setLogs(prev => [...prev, DEMO_LOGS[logIdx]]); logIdx++ }
     }, 280)
-
     const stageInterval = setInterval(() => {
-      if (stageIdx < SSE_STAGES.length) {
-        setCurrentStage(stageIdx)
-        stageIdx++
-      } else {
-        clearInterval(stageInterval)
-        clearInterval(logInterval)
-        setDone(true)
-        setTimeout(() => navigate('/dashboard'), 1500)
+      if (stageIdx < SSE_STAGES.length) { setCurrentStage(stageIdx); stageIdx++ }
+      else {
+        clearInterval(stageInterval); clearInterval(logInterval)
+        setDone(true); setTimeout(() => navigate('/dashboard'), 1500)
       }
     }, 1800)
-
     return () => { clearInterval(logInterval); clearInterval(stageInterval) }
   }
 
   return (
     <div className="min-h-screen grid-bg flex items-center justify-center p-6" style={{ background: '#020817' }}>
       <div className="w-full max-w-2xl">
-        {/* Header */}
         <div className="text-center mb-10">
           <div className="hex-id mb-2">PIPELINE // 0x{Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase()}</div>
           <h1 className="font-display text-3xl font-black neon-text-cyan mb-2">ANALYZING</h1>
           <p className="text-sm font-mono text-gray-500">Processing your profile through the AI pipeline...</p>
         </div>
 
-        {/* Stage list */}
         <div className="glass-card-cyan rounded-lg p-6 mb-5 space-y-4">
           {SSE_STAGES.map((stage, i) => {
-            const isActive  = i === currentStage
-            const isDone    = i < currentStage || done
-            const isPending = i > currentStage && !done
-
+            const isActive = i === currentStage
+            const isDone   = i < currentStage || done
             return (
               <div key={stage.id} className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5"
                   style={{
-                    background:  isDone ? `${stage.color}15` : isActive ? `${stage.color}10` : 'rgba(6,14,31,0.8)',
-                    border:      `1px solid ${isDone ? stage.color : isActive ? `${stage.color}60` : 'rgba(15,32,64,0.8)'}`,
-                    boxShadow:   isActive ? `0 0 15px ${stage.color}40` : 'none',
+                    background: isDone ? `${stage.color}15` : isActive ? `${stage.color}10` : 'rgba(6,14,31,0.8)',
+                    border: `1px solid ${isDone ? stage.color : isActive ? `${stage.color}60` : 'rgba(15,32,64,0.8)'}`,
+                    boxShadow: isActive ? `0 0 15px ${stage.color}40` : 'none',
                   }}>
                   {isDone ? (
                     <svg viewBox="0 0 24 24" fill="none" stroke={stage.color} strokeWidth="2" className="w-4 h-4">
@@ -140,18 +156,16 @@ export default function AnalyzingPage() {
                     <span className="text-xs font-mono text-gray-700">{stage.id}</span>
                   )}
                 </div>
-
                 <div className="flex-1">
-                  <p className="font-body font-semibold text-sm transition-colors"
+                  <p className="font-body font-semibold text-sm"
                     style={{ color: isDone ? stage.color : isActive ? '#e2e8f0' : '#374151' }}>
                     {stage.label}
                   </p>
-                  <p className="text-xs font-mono mt-0.5 transition-colors"
+                  <p className="text-xs font-mono mt-0.5"
                     style={{ color: isDone || isActive ? '#6b7280' : '#1f2937' }}>
                     {stage.sub}
                   </p>
                 </div>
-
                 <div className="text-xs font-mono flex-shrink-0"
                   style={{ color: isDone ? '#00ff88' : isActive ? '#fbbf24' : '#1f2937' }}>
                   {isDone ? 'DONE' : isActive ? 'ACTIVE' : 'PENDING'}
@@ -161,27 +175,22 @@ export default function AnalyzingPage() {
           })}
         </div>
 
-        {/* Terminal log */}
         <div className="terminal-panel rounded-lg p-4 h-40 overflow-y-auto">
           <div className="space-y-0.5">
             {logs.map((log, i) => (
               <div key={i} className="text-xs font-mono"
-                style={{ color: log.includes('COMPLETE') ? '#00ff88' : log.includes('ERROR') ? '#f87171' : log.includes('prevented') ? '#fbbf24' : '#4b5563' }}>
+                style={{ color: log.includes('COMPLETE') || log.includes('✓') ? '#00ff88' : log.includes('ERROR') ? '#f87171' : log.includes('WARNING') ? '#fbbf24' : '#4b5563' }}>
                 {log}
               </div>
             ))}
-            {!done && (
-              <div className="flex items-center gap-1 text-xs font-mono" style={{ color: '#00f5ff' }}>
-                <span className="animate-pulse">▋</span>
-              </div>
-            )}
+            {!done && <div className="flex items-center gap-1 text-xs font-mono" style={{ color: '#00f5ff' }}><span className="animate-pulse">▋</span></div>}
           </div>
         </div>
 
         {done && (
           <div className="text-center mt-5">
             <p className="text-sm font-mono" style={{ color: '#00ff88' }}>
-              ✓ Pipeline complete · Navigating to dashboard...
+              {fetching ? '⟳ Loading your personalised pathway...' : '✓ Complete · Navigating...'}
             </p>
           </div>
         )}
