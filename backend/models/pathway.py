@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from database import Base
 
@@ -13,5 +13,6 @@ class Pathway(Base):
     version = Column(Integer, default=1)
     # [{skill, order, stage, status, category, knowledge_state,
     #   resources[], reasoning, latest_quiz_score, quiz_attempts}]
+    target_role = Column(String, nullable=True)
     steps = Column(JSONB, default=list)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

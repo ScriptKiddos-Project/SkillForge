@@ -9,8 +9,11 @@ export const useAuthStore = create(
       isDemo: false,
 
       setAuth: (user, access_token) => {
+        const wasDemo = useAuthStore.getState().isDemo  // check if coming from demo
         localStorage.setItem('sf_token', access_token)
-        set({ user, token: access_token })
+        localStorage.removeItem('skillforge-pathway')
+        set({ user, token: access_token, isDemo: false })
+        if (wasDemo) window.location.href = '/dashboard'  // force full reload
       },
       setDemo: (user, token) => {
         localStorage.setItem('sf_token', token)

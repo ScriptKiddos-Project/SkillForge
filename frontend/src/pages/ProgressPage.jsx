@@ -1,8 +1,11 @@
+import { useState, useEffect } from 'react'
 import AppLayout from '../components/layout/AppLayout'
 import ScoreTimeline from '../components/charts/ScoreTimeline'
 import ProgressDonut from '../components/charts/ProgressDonut'
 import { usePathwayStore } from '../store/pathwayStore'
+import { useAuthStore } from '../store/authStore'
 import { demoProgress, demoPathway } from '../data/demoProfile'
+import { api } from '../lib/api'
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts'
 import { scoreToColor, statusToColor } from '../lib/utils'
 
@@ -35,23 +38,57 @@ function QuizAttemptRow({ step, index }) {
 }
 
 export default function ProgressPage() {
-  const { pathway, quizResults } = usePathwayStore()
+  const { pathway, setPathway } = usePathwayStore()
+  const { user, isDemo } = useAuthStore()
+  const [progress, setProgress] = useState(null)
+
+  const isDemoMode = () => new URLSearchParams(window.location.search).get('demo') === 'true'
+
+  useEffect(() => {
+    if (isDemo || isDemoMode()) {
+      setProgress(demoProgress)
+      return
+    }
+    if (!user?.id) return
+
+    if (!pathway) {
+      api.get(`/api/pathway/${user.id}`)
+        .then(r => setPathway(r.data))
+        .catch(() => {})
+    }
+
+    api.get(`/api/progress/${user.id}`)
+      .then(r => setProgress(r.data))
+      .catch(() => setProgress(demoProgress))
+  }, [user?.id])
+
+  if (!progress) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-48px)]">
+          <span className="text-xs font-mono text-gray-500 animate-pulse">// Loading...</span>
+        </div>
+      </AppLayout>
+    )
+  }
+
   const pw = pathway || demoPathway
-  const progress = demoProgress
+  const prog = progress || demoProgress
 
   const stepsWithScores = pw.steps.filter(s => s.quiz_score !== null && s.quiz_score !== undefined)
   const avgScore = stepsWithScores.length
     ? Math.round(stepsWithScores.reduce((a, s) => a + s.quiz_score, 0) / stepsWithScores.length * 100)
     : 0
 
-  const completePct = Math.round(pw.steps.filter(s => s.status === 'complete').length / pw.steps.length * 100)
+  const completePct = prog.pct != null
+    ? Math.round(prog.pct)
+    : Math.round(pw.steps.filter(s => s.status === 'complete').length / pw.steps.length * 100)
 
   return (
     <AppLayout>
       <div className="p-5 space-y-5 overflow-y-auto h-[calc(100vh-48px)]">
         {/* Header */}
         <div>
-         
           <h1 className="font-display text-xl font-bold neon-text-cyan">PROGRESS ANALYTICS</h1>
           <p className="text-xs font-mono text-gray-500 mt-1">Performance metrics · quiz history · skill velocity</p>
         </div>
@@ -61,8 +98,8 @@ export default function ProgressPage() {
           {[
             { label: 'OVERALL COMPLETION', value: `${completePct}%`, color: '#00f5ff' },
             { label: 'AVG QUIZ SCORE', value: `${avgScore}%`, color: scoreToColor(avgScore / 100) },
-            { label: 'STUDY HOURS', value: `${progress.total_study_hours}h`, color: '#a78bfa' },
-            { label: 'STREAK', value: `${progress.streak_days}d`, color: '#f59e0b' },
+            { label: 'STUDY HOURS', value: prog.total_study_hours != null ? `${prog.total_study_hours}h` : '—', color: '#a78bfa' },
+            { label: 'STREAK', value: prog.streak_days != null ? `${prog.streak_days}d` : '—', color: '#f59e0b' },
           ].map(k => (
             <div key={k.label} className="glass-card p-4">
               <div className="text-xs font-mono text-gray-600 mb-2">{k.label}</div>
@@ -90,14 +127,14 @@ export default function ProgressPage() {
                 </span>
               </div>
             </div>
-            <ScoreTimeline data={progress.score_timeline} />
+            <ScoreTimeline data={prog.score_timeline ?? prog.score_history ?? []} />
           </div>
 
           {/* Donuts */}
           <div className="glass-card p-5 flex flex-col items-center justify-center gap-6">
             <ProgressDonut value={completePct} label="COMPLETION" size="lg" />
             <div className="flex gap-6">
-              <ProgressDonut value={progress.quiz_pass_rate} label="PASS RATE" size="sm" />
+              <ProgressDonut value={prog.quiz_pass_rate ?? 0} label="PASS RATE" size="sm" />
               <ProgressDonut value={avgScore} label="AVG SCORE" size="sm" />
             </div>
           </div>
@@ -110,7 +147,7 @@ export default function ProgressPage() {
             <span className="text-xs font-mono text-gray-500 block mb-4">SKILL RADAR</span>
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={progress.skill_radar} cx="50%" cy="50%" outerRadius="70%">
+                <RadarChart data={prog.skill_radar ?? []} cx="50%" cy="50%" outerRadius="70%">
                   <PolarGrid stroke="rgba(15,32,64,0.8)" />
                   <PolarAngleAxis
                     dataKey="skill"

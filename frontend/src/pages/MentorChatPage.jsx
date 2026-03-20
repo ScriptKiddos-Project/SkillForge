@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import AppLayout from '../components/layout/AppLayout'
 import MentorChat from '../components/chat/MentorChat'
 import { usePathwayStore } from '../store/pathwayStore'
@@ -7,6 +8,13 @@ export default function MentorChatPage() {
   const { pathway, chatHistory } = usePathwayStore()
   const pw = pathway || demoPathway
   const activeStep = pw.steps.find(s => s.status === 'active')
+  const [triggered, setTriggered] = useState(null)
+
+  function fireQuery(q) {
+    // Reset to null first so same query can fire again if clicked twice
+    setTriggered(null)
+    setTimeout(() => setTriggered(q), 10)
+  }
 
   return (
     <AppLayout>
@@ -72,7 +80,9 @@ export default function MentorChatPage() {
                 'Why is this skill important?',
                 'Show learning resources',
               ].map(q => (
-                <button key={q} className="w-full text-left px-2.5 py-2 rounded text-xs font-mono text-gray-500 transition-all"
+                <button key={q}
+                  onClick={() => fireQuery(q)}
+                  className="w-full text-left px-2.5 py-2 rounded text-xs font-mono text-gray-500 transition-all"
                   style={{ background: 'rgba(6,14,31,0.6)', border: '1px solid rgba(15,32,64,0.8)' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#00f5ff'; e.currentTarget.style.borderColor = 'rgba(0,245,255,0.2)' }}
                   onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.borderColor = 'rgba(15,32,64,0.8)' }}>
@@ -82,21 +92,22 @@ export default function MentorChatPage() {
             </div>
           </div>
 
-          {/* Adaptive log */}
+          {/* Adaptive log — real data */}
           <div className="terminal-panel rounded p-3">
             <p className="text-xs font-mono mb-2" style={{ color: 'rgba(0,245,255,0.4)' }}>ADAPTIVE LOG</p>
             <div className="space-y-1 text-xs font-mono text-gray-700">
-              <p>Status: REVISE</p>
-              <p style={{ color: '#fbbf24' }}>Weak: Docker Networking</p>
-              <p>Resource: Docker_Net_Basics.md</p>
-              <p style={{ color: '#6b7280' }}>Attempts: 2</p>
+              <p>Status: <span style={{ color: activeStep ? '#fbbf24' : '#6b7280' }}>{activeStep?.status?.toUpperCase() || 'N/A'}</span></p>
+              {activeStep?.weak_subtopics?.length > 0 && (
+                <p style={{ color: '#fbbf24' }}>Weak: {activeStep.weak_subtopics[0]}</p>
+              )}
+              <p style={{ color: '#6b7280' }}>Attempts: {activeStep?.quiz_attempts ?? 0}</p>
             </div>
           </div>
         </div>
 
         {/* Chat panel - full height */}
         <div className="flex-1" style={{ minHeight: 0 }}>
-          <MentorChat />
+          <MentorChat triggerMessage={triggered} />
         </div>
       </div>
     </AppLayout>

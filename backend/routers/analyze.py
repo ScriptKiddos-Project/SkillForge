@@ -9,6 +9,7 @@ FIXES APPLIED:
   3. analyze() imported correctly (was extract_skills_from_texts which didn't exist)
   4. Background task opens its own DB session (request session closes before task runs)
   5. SSE auth: reads ?token= query param so EventSource can authenticate
+  6. target_role now accepted from frontend and passed through to pathway save
 """
 
 import asyncio
@@ -35,7 +36,6 @@ bearer = HTTPBearer(auto_error=False)
 
 
 # ── SSE-compatible auth dependency ────────────────────────────────────────────
-# EventSource cannot send headers, so we also accept ?token= query param
 def get_current_user_sse(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer),
     token: Optional[str] = Query(None),
@@ -56,8 +56,9 @@ def get_current_user_sse(
 
 # ── Request Schema ────────────────────────────────────────────────────────────
 class AnalyzeRequest(BaseModel):
-    resume_id: str      # file_id from POST /upload/resume
-    jd_id:     str      # file_id from POST /upload/jd
+    resume_id:   str
+    jd_id:       str
+    target_role: Optional[str] = None
 
 
 # ── Stage definitions ─────────────────────────────────────────────────────────
@@ -71,9 +72,9 @@ STAGES = [
 
 
 # ── Background pipeline task ──────────────────────────────────────────────────
-# FIX #4: Opens its own DB session — the request session is closed before this runs.
-async def _run_pipeline(job_id: str, user_id: str, resume_text: str, jd_text: str):
+async def _run_pipeline(job_id: str, user_id: str, resume_text: str, jd_text: str, target_role: str = None):
     db = SessionLocal()
+    req_target_role = target_role
     try:
         job = db.query(AnalysisJob).filter(AnalysisJob.id == job_id).first()
 
@@ -101,7 +102,7 @@ async def _run_pipeline(job_id: str, user_id: str, resume_text: str, jd_text: st
         db.commit()
 
         try:
-            from agents.evaluator import evaluate_gap   # function is evaluate_gap not compute_gap
+            from agents.evaluator import evaluate_gap
             gap_skills = await asyncio.get_event_loop().run_in_executor(
                 None, evaluate_gap, skills["resume_skills"], skills["jd_skills"]
             )
@@ -126,7 +127,7 @@ async def _run_pipeline(job_id: str, user_id: str, resume_text: str, jd_text: st
             pathway_steps = await build_pathway(
                 gap_skills=gap_result["gap_skills"],
                 knowledge_states=knowledge_states,
-                user_profile={"user_id": user_id},
+                user_profile={"user_id": user_id, "target_role": req_target_role},
                 db=db,
             )
             pathway = {"steps": pathway_steps}
@@ -186,12 +187,15 @@ async def _run_pipeline(job_id: str, user_id: str, resume_text: str, jd_text: st
             existing.steps      = pathway["steps"]
             existing.version    = (existing.version or 0) + 1
             existing.updated_at = datetime.utcnow()
+            if req_target_role:
+                existing.target_role = req_target_role
         else:
             db.add(Pathway(
                 id=str(uuid.uuid4()),
                 user_id=user_id,
                 version=1,
                 steps=pathway["steps"],
+                target_role=req_target_role,
                 updated_at=datetime.utcnow(),
             ))
 
@@ -206,7 +210,6 @@ async def _run_pipeline(job_id: str, user_id: str, resume_text: str, jd_text: st
             job.error  = str(e)
             db.commit()
     finally:
-        # FIX #4: Always close the session we opened
         db.close()
 
 
@@ -231,13 +234,13 @@ async def start_analysis(
     db.commit()
     db.refresh(job)
 
-    # FIX #4: Don't pass db — task opens its own session
     background_tasks.add_task(
         _run_pipeline,
         job.id,
         str(current_user.id),
         resume_text,
         jd_text,
+        req.target_role,
     )
 
     return {"job_id": job.id}
@@ -247,18 +250,17 @@ async def start_analysis(
 @router.get("/stream/{job_id}")
 async def stream_analysis(
     job_id:       str,
-    # FIX #5: Use SSE-compatible auth that reads ?token= query param
     current_user= Depends(get_current_user_sse),
     db: Session = Depends(get_db),
 ):
     async def event_generator():
         sent_stages   = set()
-        timeout       = 300   # 5 minutes — HuggingFace model load can be slow on first run
+        timeout       = 300
         elapsed       = 0
         poll_interval = 1.0
 
         while elapsed < timeout:
-            db.expire_all()  # force fresh read each poll
+            db.expire_all()
             job = db.query(AnalysisJob).filter(AnalysisJob.id == job_id).first()
 
             if job is None:
@@ -311,10 +313,6 @@ async def get_skill_profile(
     current_user= Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    Returns the skill profile (resume_skills, jd_skills, gap_skills) for a user.
-    Used by DashboardPage to show the radar/gap chart with real data.
-    """
     from core.auth import verify_user_access
     verify_user_access(user_id, current_user)
 

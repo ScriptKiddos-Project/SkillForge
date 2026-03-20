@@ -41,6 +41,12 @@ export default function Navbar() {
             · Target Role: <span style={{ color: '#60a5fa' }}>{pathway.target_role}</span>
           </span>
         )}
+        {/* {user?.role && (
+          <span className="px-2 py-0.5 text-xs font-mono rounded"
+            style={{ color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)' }}>
+            {user.role.toUpperCase()}
+          </span>
+        )} */}
       </div>
 
       {/* Right: actions */}
@@ -52,7 +58,7 @@ export default function Navbar() {
           </span>
         )}
 
-        <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono transition-all duration-200"
+        {/* <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono transition-all duration-200"
           style={{ color: '#60a5fa', border: '1px solid rgba(0,102,255,0.3)', borderRadius: 3, background: 'rgba(0,102,255,0.06)' }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 12px rgba(0,102,255,0.3)'}
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
@@ -60,9 +66,9 @@ export default function Navbar() {
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
           </svg>
           EXPORT_DATA
-        </button>
+        </button> */}
 
-        <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono transition-all duration-200"
+        {/* <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono transition-all duration-200"
           style={{ color: '#00f5ff', border: '1px solid rgba(0,245,255,0.3)', borderRadius: 3, background: 'rgba(0,245,255,0.06)' }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 12px rgba(0,245,255,0.3)'}
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
@@ -71,7 +77,7 @@ export default function Navbar() {
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
           </svg>
           SYNC_PROFILE
-        </button>
+        </button> */}
       </div>
     </header>
   )

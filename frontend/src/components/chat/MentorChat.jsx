@@ -71,9 +71,8 @@ function TypingIndicator() {
   )
 }
 
-export default function MentorChat({ compact = false }) {
+export default function MentorChat({ compact = false, triggerMessage = null }) {
   const { chatHistory, addMessage } = usePathwayStore()
-  // ── Pull user_id from auth store so we can include it in every request ──
   const { isDemo, user } = useAuthStore()
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -83,8 +82,15 @@ export default function MentorChat({ compact = false }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatHistory, isLoading])
 
-  async function sendMessage() {
-    const text = input.trim()
+  // Auto-send when triggerMessage changes
+  useEffect(() => {
+    if (triggerMessage) {
+      sendMessage(triggerMessage)
+    }
+  }, [triggerMessage])
+
+  async function sendMessage(overrideText = null) {
+    const text = (overrideText ?? input).trim()
     if (!text || isLoading) return
 
     const userMsg = { role: 'user', content: text, timestamp: new Date().toISOString() }
@@ -98,8 +104,6 @@ export default function MentorChat({ compact = false }) {
         const reply = getDemoReply(text)
         addMessage({ role: 'assistant', content: reply, timestamp: new Date().toISOString() })
       } else {
-
-        // ── FIX: backend expects { message, user_id, history } ──────────
         const res = await api.post('/api/chat', {
           message: text,
           user_id: user?.id,
@@ -112,7 +116,7 @@ export default function MentorChat({ compact = false }) {
       }
     } catch (err) {
       console.error('Chat error:', err)
-      addMessage({ role: 'mentor', content: 'Connection error. Please retry.', timestamp: new Date().toISOString() })
+      addMessage({ role: 'assistant', content: 'Connection error. Please retry.', timestamp: new Date().toISOString() })
     } finally {
       setIsLoading(false)
     }
@@ -172,7 +176,7 @@ export default function MentorChat({ compact = false }) {
             style={{ caretColor: '#00f5ff' }}
           />
           <button
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
             className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded transition-all disabled:opacity-30"
             style={{

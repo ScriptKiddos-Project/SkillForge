@@ -43,6 +43,7 @@ async def get_pathway(
         "version": pathway.version,
         "steps":   pathway.steps or [],
         "updated_at": pathway.updated_at.isoformat() if pathway.updated_at else None,
+        "target_role": pathway.target_role if hasattr(pathway, 'target_role') else None,
     }
 
 

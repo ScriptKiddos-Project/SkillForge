@@ -96,4 +96,9 @@ async def get_progress(
         "score_history":   score_history,
         "attempts_table":  attempts_table,
         "completed":       [s["skill"] for s in completed_steps],
+        "streak_days":       0,   # add after "completed"
+        "total_study_hours": round(len([a for a in attempts if a.skill_id in {s.get("skill") for s in steps}]) * 0.5, 1),
+        "quiz_pass_rate":    round(len([a for a in attempts if a.action == "PASS"]) / len(attempts) * 100) if attempts else 0,
+        "skill_radar":       [],
+        "score_timeline":    score_history,  # alias so frontend score_timeline works
     }

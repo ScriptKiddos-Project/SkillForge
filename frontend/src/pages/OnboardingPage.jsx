@@ -13,6 +13,11 @@
  *            is a local integer (1-5), not a real file_id UUID. The job description
  *            text now gets uploaded to /api/upload/jd/text first so the backend
  *            gets a real file_id.
+ *
+ *   Bug #NEW: target_role now extracted from selected job title or JD first line
+ *             and passed to /api/analyze so navbar shows correct role.
+ *
+ *   Bug #NEW: chat history cleared on new analysis so stale messages don't persist.
  */
 
 import { useState, useRef } from 'react'
@@ -50,7 +55,7 @@ export default function OnboardingPage() {
   const jdFileRef  = useRef(null)
   const navigate   = useNavigate()
   const { isDemo } = useAuthStore()
-  const { setPathway, setSkillProfile } = usePathwayStore()
+  const { setPathway, setSkillProfile, setChatHistory } = usePathwayStore()
 
   function handleResumeDrop(e) {
     e.preventDefault()
@@ -86,7 +91,6 @@ export default function OnboardingPage() {
       let jdFileId = null
 
       if (jdTab === 'paste') {
-        // FIX #5: Send as JSON to /api/upload/jd/text (not as text/plain Blob)
         const jdRes = await api.post('/api/upload/jd/text', { text: jdText })
         jdFileId = jdRes.data.file_id
 
@@ -99,16 +103,31 @@ export default function OnboardingPage() {
         jdFileId = jdRes.data.file_id
 
       } else if (jdTab === 'remotejob' && selectedJob) {
-        // FIX #4b: Upload the job description text first to get a real file_id
         const jdRes = await api.post('/api/upload/jd/text', { text: selectedJob.description })
         jdFileId = jdRes.data.file_id
       }
 
-      // ── Step 3: Kick off analysis ──────────────────────────────────────
+      // ── Step 3: Derive target role ─────────────────────────────────────
+      let targetRole = null
+      if (jdTab === 'remotejob' && selectedJob) {
+        targetRole = selectedJob.title
+      } else if (jdTab === 'paste' && jdText) {
+        targetRole = jdText.split('\n').find(l => l.trim().length > 5 && l.trim().length < 80)?.trim() || null
+      } else if (jdTab === 'upload') {
+        targetRole = null // backend will try to extract from PDF text
+      }
+
+      // ── Step 4: Kick off analysis ──────────────────────────────────────
       setLoadingStatus('Analyzing skill gap...')
-      // FIX #4: field name is "jd_id", not "jd_file_id"
-      const analyzePayload = { resume_id: resumeFileId, jd_id: jdFileId }
-      const analyzeRes = await api.post('/api/analyze', analyzePayload)
+      const analyzeRes = await api.post('/api/analyze', {
+        resume_id:   resumeFileId,
+        jd_id:       jdFileId,
+        target_role: targetRole,
+      })
+
+      // Clear stale chat history before navigating to new analysis
+      setChatHistory([])
+
       navigate(`/analyzing?job_id=${analyzeRes.data.job_id}`)
 
     } catch (err) {

@@ -73,7 +73,7 @@ function ModuleRow({ step, onClick }) {
   )
 }
 
-function ActiveModuleCard({ step, navigate }) {
+function ActiveModuleCard({ step, upcomingSteps = [], navigate }) {
   if (!step) return null
   return (
     <div className="glass-card p-5 h-full"
@@ -108,7 +108,7 @@ function ActiveModuleCard({ step, navigate }) {
       </div>
 
       {/* Upcoming */}
-      {demoPathway.steps.slice(3, 5).map(s => (
+      {upcomingSteps.map(s => (
         <div key={s.id} className="p-3 rounded mb-2 flex items-center justify-between"
           style={{ background: 'rgba(6,14,31,0.6)', border: '1px solid rgba(15,32,64,0.8)' }}>
           <span className="text-sm font-body text-gray-500">{s.skill}</span>
@@ -120,10 +120,10 @@ function ActiveModuleCard({ step, navigate }) {
           </span>
         </div>
       ))}
-
+{/* 
       <div className="flex items-center gap-2 mt-3">
         <input placeholder="QUERY_DB..." className="neon-input flex-1 py-2 text-xs" style={{ fontSize: 11 }} />
-      </div>
+      </div> */}
     </div>
   )
 }
@@ -181,6 +181,32 @@ export default function DashboardPage() {
   const activeStep = pw.steps.find(s => s.status === 'active')
   const completedCount = pw.steps.filter(s => s.status === 'complete').length
 
+  // compute at top of component, after pw is defined
+  const batchRate = pw.steps.length ? Math.round(completedCount / pw.steps.length * 100) : 0
+  const estimatedHours = pw.steps.reduce((sum, s) => sum + (s.estimated_hours || 0), 0)
+
+  const { chatWidth, setChatWidth } = usePathwayStore()
+  const isResizing = React.useRef(false)
+
+  function startResize(e) {
+    isResizing.current = true
+    const startX = e.clientX
+    const startWidth = chatWidth
+
+    function onMove(e) {
+      if (!isResizing.current) return
+      const delta = startX - e.clientX
+      setChatWidth(Math.min(500, Math.max(200, startWidth + delta)))
+    }
+    function onUp() {
+      isResizing.current = false
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   return (
     <AppLayout>
       <div className="h-[calc(100vh-48px)] flex overflow-hidden">
@@ -189,7 +215,7 @@ export default function DashboardPage() {
           {/* Top stat cards */}
           <div className="flex gap-4">
             <div className="glass-card p-4 flex items-center gap-4" style={{ borderColor: 'rgba(0,245,255,0.2)' }}>
-              <ProgressDonut value={pw.batch_rate || 75} label="BATCH RATE" size="md" />
+              <ProgressDonut value={batchRate} label="BATCH RATE" size="md" />
             </div>
 
             <StatCard
@@ -201,8 +227,8 @@ export default function DashboardPage() {
 
             <StatCard
               label="EST. TIME TO READY"
-              value={`${pw.estimated_hours} hrs`}
-              sub={`▾ -8 hrs from baseline`}
+              value={`${estimatedHours} hrs`}
+              // sub={`▾ -8 hrs from baseline`}
               color="#f59e0b"
               icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>}
             />
@@ -228,7 +254,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Active module */}
-            <ActiveModuleCard step={activeStep} navigate={navigate} />
+            <ActiveModuleCard step={activeStep} upcomingSteps={pw.steps.filter(s => s.status === 'locked').slice(0, 2)} navigate={navigate} />
           </div>
 
           {/* Module table */}
@@ -257,8 +283,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Right chat panel */}
-        <div className="w-72 flex-shrink-0 border-l p-3" style={{ borderColor: 'rgba(15,32,64,0.8)' }}>
-          <MentorChat compact />
+        <div className="flex-shrink-0 border-l flex flex-col overflow-hidden relative"
+          style={{ borderColor: 'rgba(15,32,64,0.8)', width: chatWidth, height: '100%' }}>
+          {/* Resize handle */}
+          <div
+            onMouseDown={startResize}
+            className="absolute left-0 top-0 h-full w-1 cursor-col-resize z-10 transition-colors"
+            style={{ background: 'transparent' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,245,255,0.3)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          />
+          <div className="flex-1 overflow-hidden p-3">
+            <MentorChat compact />
+          </div>
         </div>
       </div>
     </AppLayout>

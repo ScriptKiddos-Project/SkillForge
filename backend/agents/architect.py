@@ -63,20 +63,18 @@ async def build_pathway(
     return steps
 
 
-def _save_pathway(user_id: str, steps: list[dict], db: Session) -> None:
-    """
-    Upsert the pathway in the DB.
-    Creates a new row if none exists; updates + increments version if it does.
-    """
-    from models.pathway import Pathway  # local import to avoid circular
+def _save_pathway(user_id: str, steps: list[dict], db: Session, target_role: str = None) -> None:
+    from models.pathway import Pathway
 
     existing = db.query(Pathway).filter(Pathway.user_id == user_id).first()
     if existing:
         existing.steps = steps
         existing.version = (existing.version or 1) + 1
+        if target_role:
+            existing.target_role = target_role
         db.add(existing)
     else:
-        row = Pathway(user_id=user_id, steps=steps, version=1)
+        row = Pathway(user_id=user_id, steps=steps, version=1, target_role=target_role)
         db.add(row)
     db.commit()
 
