@@ -35,10 +35,12 @@ export default function TopicPage() {
   async function handleQuizResult(result) {
     setQuizResult(result);
 
-    // Update local store immediately for instant UI feedback
+    const { useAuthStore } = await import("../store/authStore");
+    const { isDemo } = useAuthStore.getState();
+    if (isDemo) return; // demo mode — no backend sync needed
+
     if (result.action === "PASS") {
       updateStepStatus(step.id, "complete", result.score);
-      // Unlock next step in local store
       if (result.next_topic) {
         const nextStep = pw.steps.find((s) => s.skill === result.next_topic);
         if (nextStep) updateStepStatus(nextStep.id, "active");
@@ -49,12 +51,11 @@ export default function TopicPage() {
       updateStepStatus(step.id, "retry", result.score);
     }
 
-    // Also refetch from backend to sync DB state
     try {
       const { default: api } = await import("../lib/api");
-      const { useAuthStore } = await import("../store/authStore");
       const userId = useAuthStore.getState().user?.id;
       if (userId) {
+        await new Promise((r) => setTimeout(r, 1500));
         const res = await api.get(`/api/pathway/${userId}`);
         usePathwayStore.getState().setPathway(res.data);
       }

@@ -1,10 +1,9 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import { usePathwayStore } from './store/pathwayStore'
 import { demoUser, demoPathway, demoSkillProfile, demoChatHistory } from './data/demoProfile'
 
-// Pages
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -16,32 +15,25 @@ import TopicPage from './pages/TopicPage'
 import ProgressPage from './pages/ProgressPage'
 import MentorChatPage from './pages/MentorChatPage'
 import NotFoundPage from './pages/NotFoundPage'
-
-// Layout
 import ProtectedRoute from './components/layout/ProtectedRoute'
 
 function DemoLoader() {
-  const { setDemo, isDemo } = useAuthStore()
-  const { setPathway, setSkillProfile, setChatHistory, pathway } = usePathwayStore()
-
-  // Run synchronously before first render — no useEffect
-  const params = new URLSearchParams(window.location.search)
-  const isDemoUrl = params.get('demo') === 'true'
-  
-  if (isDemoUrl || isDemo) {
-    setDemo(demoUser, demoUser.token)
-    if (!pathway) {
+  const { setDemo } = useAuthStore()
+  const { setPathway, setSkillProfile, setChatHistory } = usePathwayStore()
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('demo') === 'true') {
+      setDemo(demoUser, demoUser.token)
       setPathway(demoPathway)
       setSkillProfile(demoSkillProfile)
       setChatHistory(demoChatHistory)
     }
-  }
-
+  }, [])
   return null
 }
 
 function AppRoutes() {
-  const { user, token, isDemo } = useAuthStore()
+  const { user, token } = useAuthStore()
   const isAuthenticated = !!(user && token)
 
   return (
@@ -49,7 +41,6 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/signup" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <SignupPage />} />
-
       <Route element={<ProtectedRoute />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/analyzing" element={<AnalyzingPage />} />
@@ -59,7 +50,6 @@ function AppRoutes() {
         <Route path="/progress" element={<ProgressPage />} />
         <Route path="/mentor" element={<MentorChatPage />} />
       </Route>
-
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
