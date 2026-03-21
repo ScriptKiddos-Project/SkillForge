@@ -124,10 +124,15 @@ async def generate_quiz(
         from core.llm import generate_json
         prompt    = _build_quiz_prompt(req.skill_id, req.difficulty, req.role)
         questions = generate_json(prompt, retries=3)
+        if questions and _validate_quiz(questions):
+            print(f"[QUIZ] LLaMA generated quiz for '{req.skill_id}' successfully")
+        else:
+            questions = None
     except (ImportError, Exception):
         pass
 
     if questions is None or not _validate_quiz(questions):
+        print(f"[QUIZ] LLaMA failed for '{req.skill_id}' — using fallback")
         questions     = _load_fallback(req.skill_id)
         used_fallback = True
 
@@ -207,9 +212,9 @@ async def submit_quiz(
         attempted_at  = datetime.utcnow(),
     )
     db.add(attempt)
-    db.commit()
+    db.commit()  # commit attempt first
 
-    # ── Call adaptive engine ──────────────────────────────────────────────────
+    # ── Call adaptive engine — handles its own commit ─────────────────────────
     next_topic = None
     try:
         from core.adaptive_engine import update_pathway_after_quiz
@@ -223,8 +228,10 @@ async def submit_quiz(
         )
         next_topic = result.get("next_topic")
         message    = result.get("message", message)
-    except (ImportError, Exception):
-        pass
+        print(f"[ADAPTIVE] action={result.get('action')} next_topic={next_topic}")
+    except Exception as e:
+        print(f"[ADAPTIVE] FAILED: {e}")
+        import traceback; traceback.print_exc()
 
     return {
         "score":         round(score, 2),

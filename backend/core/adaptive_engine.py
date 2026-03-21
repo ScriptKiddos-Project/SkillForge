@@ -7,11 +7,16 @@ FIX APPLIED:
            Each step now gets a stable UUID.
   Bug #12: Steps were missing "type", "difficulty", "estimated_hours" fields
            that DashboardPage and TopicPage read. Reasonable defaults added.
+  Bug #13: with db.begin() created nested transaction causing silent no-op.
+           Removed nested transaction — adaptive engine now manages its own
+           commit directly. flag_modified() added for JSONB detection.
 """
 
 import uuid
+import copy
 from collections import Counter
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from core.skill_graph import SkillGraph
 
@@ -73,6 +78,9 @@ def generate_pathway(
             skill_graph.add_leaf_node(skill)
 
     ordered = skill_graph.topological_order(list(all_needed))
+    # Re-sort: within same topological level, prioritize ml_ai > data > ops
+    CATEGORY_PRIORITY = {"data": 0, "ml_ai": 1, "programming_language": 2, "ops": 3, "business": 4, "soft_skills": 5}
+    ordered.sort(key=lambda s: CATEGORY_PRIORITY.get(skill_graph.get_category(s), 99))
 
     steps: list[dict] = []
     for i, skill in enumerate(ordered):
@@ -111,58 +119,64 @@ def update_pathway_after_quiz(
 ) -> dict:
     """
     Apply PASS / REVISE / RETRY logic to the pathway after a quiz.
-    Uses row-level locking to prevent race conditions.
+    FIX #13: Removed nested with db.begin() which caused silent no-op.
+    Uses flag_modified() so SQLAlchemy detects JSONB mutation.
     """
     from models.pathway import Pathway
 
-    with db.begin():
-        row = (
-            db.query(Pathway)
-            .filter(Pathway.user_id == user_id)
-            .with_for_update()
-            .first()
+    # FIX #13: No nested transaction — query directly on existing session
+    row = (
+        db.query(Pathway)
+        .filter(Pathway.user_id == user_id)
+        .with_for_update()
+        .first()
+    )
+    if row is None:
+        raise ValueError(f"No pathway found for user {user_id}")
+
+    # Deep copy so SQLAlchemy detects the change
+    pathway: list[dict] = copy.deepcopy(row.steps)
+
+    step = _find_step(pathway, skill_id)
+    if step is None:
+        raise ValueError(f"Skill '{skill_id}' not in pathway for user {user_id}")
+
+    step["latest_quiz_score"] = round(score, 4)
+    step["quiz_attempts"]     = step.get("quiz_attempts", 0) + 1
+
+    if score >= 0.70:
+        step["status"] = "complete"
+        nxt = _find_next_locked(pathway, step["order"])
+        if nxt:
+            nxt["status"] = "active"
+        action        = "PASS"
+        next_topic    = nxt["skill"] if nxt else None
+        weak_subtopic = None
+        message = (
+            f"{skill_id} complete."
+            + (f" {next_topic} is now unlocked." if next_topic else " You have finished the pathway!")
         )
-        if row is None:
-            raise ValueError(f"No pathway found for user {user_id}")
 
-        pathway: list[dict] = row.steps
+    elif score >= 0.40:
+        weak_subtopic = identify_weak_subtopics(questions, user_answers)
+        step["status"] = "revise"
+        action     = "REVISE"
+        next_topic = skill_id
+        message    = f"Score {int(score * 100)}%. Review: {weak_subtopic} before retaking."
 
-        step = _find_step(pathway, skill_id)
-        if step is None:
-            raise ValueError(f"Skill '{skill_id}' not in pathway for user {user_id}")
+    else:
+        step["status"] = "retry"
+        action        = "RETRY"
+        next_topic    = skill_id
+        weak_subtopic = None
+        message       = f"Score {int(score * 100)}%. Simpler resources loaded. Try again."
 
-        step["latest_quiz_score"] = round(score, 4)
-        step["quiz_attempts"]     = step.get("quiz_attempts", 0) + 1
-
-        if score >= 0.70:
-            step["status"] = "complete"
-            nxt = _find_next_locked(pathway, step["order"])
-            if nxt:
-                nxt["status"] = "active"
-            action      = "PASS"
-            next_topic  = nxt["skill"] if nxt else None
-            weak_subtopic = None
-            message = (
-                f"{skill_id} complete."
-                + (f" {next_topic} is now unlocked." if next_topic else " You have finished the pathway!")
-            )
-
-        elif score >= 0.40:
-            weak_subtopic = identify_weak_subtopics(questions, user_answers)
-            step["status"] = "revise"
-            action     = "REVISE"
-            next_topic = skill_id
-            message    = f"Score {int(score * 100)}%. Review: {weak_subtopic} before retaking."
-
-        else:
-            step["status"] = "retry"
-            action        = "RETRY"
-            next_topic    = skill_id
-            weak_subtopic = None
-            message       = f"Score {int(score * 100)}%. Simpler resources loaded. Try again."
-
-        row.steps = pathway
-        db.add(row)
+    # FIX #13: flag_modified tells SQLAlchemy the JSONB column changed
+    row.steps = pathway
+    flag_modified(row, "steps")
+    db.add(row)
+    db.commit()
+    print(f"[ADAPTIVE] DB committed — skill={skill_id} status={step['status']} score={score} next={next_topic}")
 
     return {
         "action":        action,

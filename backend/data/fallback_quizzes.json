@@ -368,5 +368,375 @@
       "explanation": "Scope creep is the gradual expansion of requirements without adjusting timeline, budget, or resources.",
       "subtopic": "scope management"
     }
-  ]
+  ],
+  "MLOps": [
+  {
+    "question": "What is the primary purpose of MLflow in an ML pipeline?",
+    "options": ["A) Data cleaning", "B) Tracking experiments, models, and deployments", "C) Feature engineering", "D) Data collection"],
+    "correct_answer": "B",
+    "explanation": "MLflow tracks experiments, parameters, metrics, and model versions across the ML lifecycle.",
+    "subtopic": "experiment tracking"
+  },
+  {
+    "question": "What does model drift refer to in MLOps?",
+    "options": ["A) Model file corruption", "B) Degradation of model performance over time due to changing data", "C) Slow inference speed", "D) Overfitting during training"],
+    "correct_answer": "B",
+    "explanation": "Model drift occurs when real-world data patterns change, causing the model's predictions to degrade.",
+    "subtopic": "model drift"
+  },
+  {
+    "question": "What is a model registry used for?",
+    "options": ["A) Storing training datasets", "B) Managing model versions and their deployment stages", "C) Monitoring server health", "D) Feature store management"],
+    "correct_answer": "B",
+    "explanation": "A model registry tracks model versions, stages (staging/production), and deployment history.",
+    "subtopic": "model registry"
+  },
+  {
+    "question": "What is the difference between batch inference and real-time inference?",
+    "options": ["A) No difference", "B) Batch processes many inputs offline; real-time serves individual requests instantly", "C) Real-time is always more accurate", "D) Batch inference uses more memory"],
+    "correct_answer": "B",
+    "explanation": "Batch inference runs predictions on large datasets periodically; real-time serves predictions on-demand.",
+    "subtopic": "inference types"
+  },
+  {
+    "question": "What does CI/CD mean in the context of MLOps?",
+    "options": ["A) Code Integration / Code Deployment", "B) Continuous Integration / Continuous Delivery of models and pipelines", "C) Cloud Infrastructure / Cloud Delivery", "D) Centralized Integration / Centralized Deployment"],
+    "correct_answer": "B",
+    "explanation": "CI/CD in MLOps automates testing, validation, and deployment of ML models whenever code or data changes.",
+    "subtopic": "ci/cd for ml"
+  }
+],
+"Kubernetes": [
+  {
+    "question": "What is a Kubernetes Pod?",
+    "options": ["A) A virtual machine", "B) The smallest deployable unit containing one or more containers", "C) A storage volume", "D) A network policy"],
+    "correct_answer": "B",
+    "explanation": "A Pod is the smallest deployable unit in Kubernetes, wrapping one or more containers with shared networking.",
+    "subtopic": "pods"
+  },
+  {
+    "question": "What does a Kubernetes Deployment manage?",
+    "options": ["A) Network routing", "B) Persistent storage", "C) Desired state of replica sets and rolling updates", "D) Node hardware resources"],
+    "correct_answer": "C",
+    "explanation": "A Deployment declares the desired state for Pods and manages rolling updates and rollbacks.",
+    "subtopic": "deployments"
+  },
+  {
+    "question": "What is a Kubernetes Service?",
+    "options": ["A) A background job", "B) A stable network endpoint to expose Pods", "C) A storage class", "D) A config file"],
+    "correct_answer": "B",
+    "explanation": "A Service provides a stable IP and DNS name to access a set of Pods, abstracting Pod lifecycle.",
+    "subtopic": "services"
+  },
+  {
+    "question": "What does kubectl apply -f do?",
+    "options": ["A) Deletes resources", "B) Applies a configuration file to create or update Kubernetes resources", "C) Lists all pods", "D) Scales a deployment"],
+    "correct_answer": "B",
+    "explanation": "kubectl apply -f reads a YAML manifest and creates or updates the described Kubernetes resources.",
+    "subtopic": "kubectl"
+  },
+  {
+    "question": "What is a ConfigMap in Kubernetes?",
+    "options": ["A) A type of Pod", "B) Stores non-sensitive configuration data as key-value pairs", "C) A network policy", "D) A persistent volume"],
+    "correct_answer": "B",
+    "explanation": "ConfigMaps decouple configuration from container images, storing environment variables and config files.",
+    "subtopic": "configmaps"
+  }
+],
+"Google Cloud Platform": [
+  {
+    "question": "What is Google Cloud Storage primarily used for?",
+    "options": ["A) Running VMs", "B) Object storage for files and datasets", "C) Container orchestration", "D) DNS management"],
+    "correct_answer": "B",
+    "explanation": "GCS is an object storage service for storing and retrieving any amount of data at any time.",
+    "subtopic": "gcs"
+  },
+  {
+    "question": "What is BigQuery?",
+    "options": ["A) A NoSQL database", "B) A serverless data warehouse for large-scale SQL analytics", "C) A VM service", "D) A messaging queue"],
+    "correct_answer": "B",
+    "explanation": "BigQuery is GCP's fully managed, serverless data warehouse optimized for large-scale analytics.",
+    "subtopic": "bigquery"
+  },
+  {
+    "question": "What is Vertex AI on GCP?",
+    "options": ["A) A data storage service", "B) A unified ML platform for building, deploying, and scaling models", "C) A networking service", "D) A monitoring tool"],
+    "correct_answer": "B",
+    "explanation": "Vertex AI provides a unified platform for the entire ML workflow from training to deployment on GCP.",
+    "subtopic": "vertex ai"
+  },
+  {
+    "question": "What does GCP Cloud Run do?",
+    "options": ["A) Manages Kubernetes clusters", "B) Runs containerized apps in a fully managed serverless environment", "C) Stores objects", "D) Provides CDN"],
+    "correct_answer": "B",
+    "explanation": "Cloud Run deploys and scales containerized applications automatically without managing infrastructure.",
+    "subtopic": "cloud run"
+  },
+  {
+    "question": "What is the purpose of GCP IAM?",
+    "options": ["A) Image and media management", "B) Controls who has access to which GCP resources", "C) Infrastructure automation", "D) API gateway management"],
+    "correct_answer": "B",
+    "explanation": "IAM lets you control access to GCP resources by assigning roles and permissions to users and service accounts.",
+    "subtopic": "iam"
+  }
+],
+"Supply Chain Basics": [
+  {
+    "question": "What is the bullwhip effect in supply chains?",
+    "options": ["A) Rapid delivery times", "B) Amplification of demand variability as it moves upstream", "C) Reduction in inventory costs", "D) Supplier consolidation"],
+    "correct_answer": "B",
+    "explanation": "The bullwhip effect occurs when small demand fluctuations at retail level cause large swings in upstream orders.",
+    "subtopic": "demand variability"
+  },
+  {
+    "question": "What does EOQ stand for?",
+    "options": ["A) End of Quarter", "B) Economic Order Quantity", "C) Estimated Output Quality", "D) External Order Queue"],
+    "correct_answer": "B",
+    "explanation": "EOQ is the optimal order quantity that minimizes total inventory holding and ordering costs.",
+    "subtopic": "inventory management"
+  },
+  {
+    "question": "What is a lead time in supply chain?",
+    "options": ["A) Time the CEO leads a meeting", "B) Time from order placement to order receipt", "C) Time to manufacture a product", "D) Time to ship internationally"],
+    "correct_answer": "B",
+    "explanation": "Lead time is the total time elapsed from when an order is placed until it is received and ready to use.",
+    "subtopic": "lead time"
+  },
+  {
+    "question": "What is Just-In-Time (JIT) inventory?",
+    "options": ["A) Keeping maximum stock always", "B) Receiving goods only as they are needed to reduce waste", "C) Ordering monthly in bulk", "D) Automated reorder systems"],
+    "correct_answer": "B",
+    "explanation": "JIT minimizes inventory by receiving materials just as they are needed in production, reducing holding costs.",
+    "subtopic": "jit"
+  },
+  {
+    "question": "What does 3PL stand for?",
+    "options": ["A) Third Party Logistics", "B) Three Phase Logistics", "C) Triple Product Line", "D) Third Party Licensing"],
+    "correct_answer": "A",
+    "explanation": "3PL providers handle outsourced logistics including warehousing, transportation, and distribution.",
+    "subtopic": "logistics"
+  }
+],
+"Process Optimization": [
+  {
+    "question": "What is a bottleneck in process optimization?",
+    "options": ["A) A type of container", "B) The step that limits overall throughput of a process", "C) A budget constraint", "D) An approval gate"],
+    "correct_answer": "B",
+    "explanation": "A bottleneck is the slowest step in a process that constrains the overall flow and output rate.",
+    "subtopic": "bottleneck analysis"
+  },
+  {
+    "question": "What does a value stream map show?",
+    "options": ["A) Financial value of products", "B) All steps in a process and their value-add vs waste", "C) Customer satisfaction scores", "D) Revenue streams"],
+    "correct_answer": "B",
+    "explanation": "Value stream mapping visualizes every step in a process to identify waste and improvement opportunities.",
+    "subtopic": "value stream mapping"
+  },
+  {
+    "question": "What is PDCA in process improvement?",
+    "options": ["A) Plan, Design, Create, Analyze", "B) Plan, Do, Check, Act — a continuous improvement cycle", "C) Process, Define, Control, Automate", "D) Prioritize, Delegate, Complete, Assess"],
+    "correct_answer": "B",
+    "explanation": "PDCA (Plan-Do-Check-Act) is a four-step iterative method for continuous process improvement.",
+    "subtopic": "pdca"
+  },
+  {
+    "question": "What is the 5S methodology?",
+    "options": ["A) Five sigma quality levels", "B) Sort, Set in order, Shine, Standardize, Sustain — workplace organization", "C) Five steps of supply chain", "D) Speed, Scale, Skill, Strategy, Systems"],
+    "correct_answer": "B",
+    "explanation": "5S is a workplace organization method to improve efficiency and reduce waste through structured organization.",
+    "subtopic": "5s methodology"
+  },
+  {
+    "question": "What does OEE measure in manufacturing?",
+    "options": ["A) Overall Employee Engagement", "B) Overall Equipment Effectiveness — availability, performance, quality", "C) Operational Expense Estimate", "D) Output Efficiency Evaluation"],
+    "correct_answer": "B",
+    "explanation": "OEE measures manufacturing productivity by combining equipment availability, performance rate, and quality rate.",
+    "subtopic": "oee"
+  }
+],
+"Lean Six Sigma": [
+  {
+    "question": "What does DMAIC stand for?",
+    "options": ["A) Define, Measure, Analyze, Improve, Control", "B) Design, Model, Assess, Integrate, Complete", "C) Data, Method, Analysis, Insight, Control", "D) Define, Map, Audit, Implement, Close"],
+    "correct_answer": "A",
+    "explanation": "DMAIC is the core Six Sigma improvement methodology: Define, Measure, Analyze, Improve, Control.",
+    "subtopic": "dmaic"
+  },
+  {
+    "question": "What does sigma level indicate in Six Sigma?",
+    "options": ["A) Number of employees trained", "B) How many standard deviations fit between process mean and spec limits", "C) Cost of quality", "D) Speed of process"],
+    "correct_answer": "B",
+    "explanation": "Higher sigma levels mean fewer defects; Six Sigma targets 3.4 defects per million opportunities.",
+    "subtopic": "sigma levels"
+  },
+  {
+    "question": "What is a control chart used for?",
+    "options": ["A) Budget tracking", "B) Monitoring process variation over time to detect special causes", "C) Project scheduling", "D) Employee performance review"],
+    "correct_answer": "B",
+    "explanation": "Control charts plot process data over time with control limits to distinguish normal variation from special causes.",
+    "subtopic": "control charts"
+  },
+  {
+    "question": "What is muda in Lean methodology?",
+    "options": ["A) A Japanese management style", "B) Any activity that consumes resources without adding value (waste)", "C) A type of quality control", "D) A production target"],
+    "correct_answer": "B",
+    "explanation": "Muda means waste in Japanese — activities that use resources but create no value for the customer.",
+    "subtopic": "waste elimination"
+  },
+  {
+    "question": "What is a fishbone diagram used for?",
+    "options": ["A) Supply chain mapping", "B) Identifying root causes of a problem", "C) Process flow documentation", "D) Budget allocation"],
+    "correct_answer": "B",
+    "explanation": "A fishbone (Ishikawa) diagram visualizes potential causes of a problem organized by category.",
+    "subtopic": "root cause analysis"
+  }
+],
+"Communication": [
+  {
+    "question": "What is active listening?",
+    "options": ["A) Talking more than listening", "B) Fully concentrating, understanding, and responding to a speaker", "C) Taking notes during a meeting", "D) Asking questions only"],
+    "correct_answer": "B",
+    "explanation": "Active listening involves full attention, understanding the message, and providing thoughtful responses.",
+    "subtopic": "active listening"
+  },
+  {
+    "question": "What is the purpose of an executive summary?",
+    "options": ["A) To provide all technical details", "B) To give decision-makers a concise overview of key points", "C) To list all team members", "D) To document meeting minutes"],
+    "correct_answer": "B",
+    "explanation": "An executive summary distills the most critical information for busy decision-makers who need quick understanding.",
+    "subtopic": "written communication"
+  },
+  {
+    "question": "What does non-verbal communication include?",
+    "options": ["A) Only sign language", "B) Body language, facial expressions, tone, and gestures", "C) Written messages only", "D) Email communication"],
+    "correct_answer": "B",
+    "explanation": "Non-verbal communication encompasses body language, eye contact, facial expressions, tone, and posture.",
+    "subtopic": "non-verbal communication"
+  },
+  {
+    "question": "What is the 7C's principle in communication?",
+    "options": ["A) Seven steps to conflict resolution", "B) Clear, Concise, Concrete, Correct, Coherent, Complete, Courteous", "C) Seven channels of communication", "D) Seven customer communication rules"],
+    "correct_answer": "B",
+    "explanation": "The 7C's framework ensures effective communication by being Clear, Concise, Concrete, Correct, Coherent, Complete, and Courteous.",
+    "subtopic": "communication principles"
+  },
+  {
+    "question": "What is feedback in communication?",
+    "options": ["A) Noise in the channel", "B) The receiver's response to the sender's message", "C) A one-way broadcast", "D) Technical audio feedback"],
+    "correct_answer": "B",
+    "explanation": "Feedback closes the communication loop by letting the sender know their message was received and understood.",
+    "subtopic": "feedback"
+  }
+],
+"Leadership": [
+  {
+    "question": "What is transformational leadership?",
+    "options": ["A) Managing day-to-day operations", "B) Inspiring followers to exceed expectations through vision and motivation", "C) Delegating all tasks", "D) Maintaining the status quo"],
+    "correct_answer": "B",
+    "explanation": "Transformational leaders inspire change by creating a vision, motivating followers, and fostering innovation.",
+    "subtopic": "leadership styles"
+  },
+  {
+    "question": "What is emotional intelligence (EQ) in leadership?",
+    "options": ["A) IQ score of a leader", "B) Ability to recognize, understand, and manage emotions in self and others", "C) Technical expertise", "D) Financial acumen"],
+    "correct_answer": "B",
+    "explanation": "EQ enables leaders to build relationships, manage conflict, and motivate teams by understanding emotions.",
+    "subtopic": "emotional intelligence"
+  },
+  {
+    "question": "What is delegation in leadership?",
+    "options": ["A) Avoiding responsibility", "B) Assigning tasks and authority to team members to develop them", "C) Micromanaging all work", "D) Reporting to senior management"],
+    "correct_answer": "B",
+    "explanation": "Effective delegation assigns appropriate tasks to team members, developing their skills while freeing leader capacity.",
+    "subtopic": "delegation"
+  },
+  {
+    "question": "What does servant leadership emphasize?",
+    "options": ["A) Leader's personal success", "B) Putting team members' needs first to enable their success", "C) Command and control", "D) Rapid decision-making"],
+    "correct_answer": "B",
+    "explanation": "Servant leaders prioritize their team's growth and wellbeing, believing this drives organizational success.",
+    "subtopic": "servant leadership"
+  },
+  {
+    "question": "What is psychological safety in a team?",
+    "options": ["A) Physical workplace safety", "B) Belief that one can speak up, take risks, and make mistakes without punishment", "C) Employee mental health benefits", "D) Conflict avoidance policy"],
+    "correct_answer": "B",
+    "explanation": "Psychological safety enables team members to voice ideas, concerns, and mistakes without fear of negative consequences.",
+    "subtopic": "psychological safety"
+  }
+],
+"Stakeholder Management": [
+  {
+    "question": "What is a stakeholder register?",
+    "options": ["A) A financial ledger", "B) A document identifying all stakeholders and their interests, influence, and engagement", "C) A meeting agenda", "D) A risk log"],
+    "correct_answer": "B",
+    "explanation": "A stakeholder register catalogs all stakeholders with their contact info, interests, influence, and engagement strategy.",
+    "subtopic": "stakeholder identification"
+  },
+  {
+    "question": "What does a power/interest grid help with?",
+    "options": ["A) Electrical planning", "B) Prioritizing stakeholder engagement based on their power and interest levels", "C) Budget allocation", "D) Risk assessment"],
+    "correct_answer": "B",
+    "explanation": "The power/interest grid maps stakeholders to quadrants (manage closely, keep satisfied, keep informed, monitor).",
+    "subtopic": "stakeholder mapping"
+  },
+  {
+    "question": "What is the best approach for a high-power, low-interest stakeholder?",
+    "options": ["A) Ignore them", "B) Keep them satisfied with periodic high-level updates", "C) Involve them in every decision", "D) Monitor them minimally"],
+    "correct_answer": "B",
+    "explanation": "High-power, low-interest stakeholders should be kept satisfied — they can impact the project but don't need details.",
+    "subtopic": "engagement strategies"
+  },
+  {
+    "question": "What is stakeholder conflict and how is it managed?",
+    "options": ["A) Technical disagreements resolved by IT", "B) Competing interests between stakeholders, managed through negotiation and prioritization", "C) Budget disputes only", "D) Conflicts between external vendors"],
+    "correct_answer": "B",
+    "explanation": "Stakeholder conflicts arise from competing interests and are resolved through negotiation, compromise, and escalation.",
+    "subtopic": "conflict resolution"
+  },
+  {
+    "question": "Why is regular stakeholder communication important?",
+    "options": ["A) It is a legal requirement", "B) It builds trust, manages expectations, and prevents surprises", "C) It increases project budget", "D) It speeds up delivery"],
+    "correct_answer": "B",
+    "explanation": "Regular communication keeps stakeholders informed, aligned, and engaged, reducing resistance and building support.",
+    "subtopic": "communication planning"
+  }
+],
+"Financial Modeling": [
+  {
+    "question": "What is a DCF model used for?",
+    "options": ["A) Tracking daily cash flow", "B) Estimating the present value of future cash flows to value a business", "C) Calculating tax liabilities", "D) Building budget forecasts"],
+    "correct_answer": "B",
+    "explanation": "DCF (Discounted Cash Flow) values a business by discounting projected future cash flows to their present value.",
+    "subtopic": "dcf valuation"
+  },
+  {
+    "question": "What does EBITDA stand for?",
+    "options": ["A) Earnings Before Interest, Taxes, Depreciation, and Amortization", "B) Estimated Budget Including Tax, Debt, and Assets", "C) Equity-Based Income Tax Deduction Amount", "D) Earnings Before Internal Tax and Debt Adjustment"],
+    "correct_answer": "A",
+    "explanation": "EBITDA measures operating performance by removing non-operating expenses to compare companies.",
+    "subtopic": "financial metrics"
+  },
+  {
+    "question": "What is a sensitivity analysis in financial modeling?",
+    "options": ["A) Analyzing customer sentiment", "B) Testing how changes in key assumptions affect model outputs", "C) Measuring market volatility", "D) Assessing employee performance"],
+    "correct_answer": "B",
+    "explanation": "Sensitivity analysis shows how the model output changes when input variables like growth rate or discount rate change.",
+    "subtopic": "sensitivity analysis"
+  },
+  {
+    "question": "What are the three core financial statements?",
+    "options": ["A) Budget, Forecast, Actuals", "B) Income Statement, Balance Sheet, Cash Flow Statement", "C) Revenue, Costs, Profit", "D) Assets, Liabilities, Equity"],
+    "correct_answer": "B",
+    "explanation": "The three core statements are the Income Statement (profit/loss), Balance Sheet (assets/liabilities), and Cash Flow Statement.",
+    "subtopic": "financial statements"
+  },
+  {
+    "question": "What is working capital?",
+    "options": ["A) Total company assets", "B) Current assets minus current liabilities", "C) Annual revenue", "D) Long-term debt"],
+    "correct_answer": "B",
+    "explanation": "Working capital measures short-term liquidity: current assets (cash, inventory) minus current liabilities (payables).",
+    "subtopic": "working capital"
+  }
+]
 }

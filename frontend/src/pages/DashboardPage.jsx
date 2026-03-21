@@ -231,7 +231,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = React.useState(false);
   const isResizing = React.useRef(false);
   React.useEffect(() => {
-    if (isDemo || pathway || !user?.id) return;
+    if (isDemo || !user?.id) return
     setLoading(true);
     import("../lib/api").then(({ default: api }) => {
       api
@@ -436,13 +436,12 @@ export default function DashboardPage() {
               </div>
               <SkillGapChart
                 data={(profile?.gap_skills || pw?.steps || []).map((s) => ({
-                  skill: s.name || s.skill || "Unknown",
-                  gap_score:
-                    s.knowledge_state != null ? 1 - s.knowledge_state : 0.8,
-                  confidence: Math.round((s.confidence || 0.75) * 100),
-                  category: s.category || "general",
-                  priority: s.priority != null ? s.priority + 1 : 1,
-                }))}
+                skill: s.name || s.skill || "Unknown",
+                gap_score: s.knowledge_state != null ? (1 - s.knowledge_state) : 0.8,
+                confidence: s.knowledge_state != null ? Math.round(s.knowledge_state * 100) : 0,
+                category: s.category || "general",
+                priority: s.priority != null ? s.priority + 1 : 1,
+              }))}
               />
             </div>
 

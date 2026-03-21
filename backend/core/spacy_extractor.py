@@ -46,15 +46,28 @@ def extract_skills(text: str, onet_skills: list, model: SentenceTransformer) -> 
     Returns:
         List of {name, category, level, confidence} dicts, deduplicated.
     """
-    text = text[:5000]
+    text = text[:8000]  # increase limit
     doc = nlp(text)
 
-    # Multi-word noun chunks (2–4 words, minimum length 3 chars)
     chunks = list(set(
         normalize(c.text)
         for c in doc.noun_chunks
         if 2 <= len(c.text.split()) <= 4 and len(c.text) > 3
     ))
+
+    # explicitly add known tech keywords found verbatim in text
+    TECH_KEYWORDS = [
+        "Machine Learning", "Deep Learning", "Natural Language Processing",
+        "NLP", "MLOps", "TensorFlow", "PyTorch", "Statistics", "Kubernetes",
+        "Docker", "AWS", "GCP", "Google Cloud Platform", "CI/CD",
+        "Computer Vision", "Reinforcement Learning", "Data Science",
+        "Power BI", "Tableau", "Spark", "Hadoop", "Kafka", "Redis",
+        "MongoDB", "Node.js", "Django", "Spring Boot", "Microservices",
+        "System Design", "Data Engineering", "Feature Engineering",
+    ]
+    for kw in TECH_KEYWORDS:
+        if kw.lower() in text.lower():
+            chunks.append(normalize(kw))
 
     # Single proper/common nouns that may be tech terms
     single_words = [

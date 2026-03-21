@@ -60,5 +60,10 @@
   { "name": "Leadership", "category": "soft_skills", "aliases": ["team leadership", "people management", "executive leadership"] },
   { "name": "Critical Thinking", "category": "soft_skills", "aliases": ["analytical thinking", "problem solving", "decision making"] },
   { "name": "Collaboration", "category": "soft_skills", "aliases": ["teamwork", "cross-functional collaboration", "team player"] },
-  { "name": "Time Management", "category": "soft_skills", "aliases": ["prioritization", "organization", "productivity"] }
+  { "name": "Time Management", "category": "soft_skills", "aliases": ["prioritization", "organization", "productivity"] },
+  { "name": "Tableau", "category": "data", "aliases": ["tableau desktop", "tableau server"] },
+  { "name": "Power BI", "category": "data", "aliases": ["powerbi", "microsoft power bi"] },
+  { "name": "Pandas", "category": "data", "aliases": ["pandas library", "dataframes"] },
+  { "name": "Agile", "category": "business", "aliases": ["agile methodology", "agile development"] },
+  { "name": "Scrum", "category": "business", "aliases": ["scrum framework", "scrum methodology"] }
 ]

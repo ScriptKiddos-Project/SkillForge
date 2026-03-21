@@ -31,7 +31,18 @@
     "Google Cloud Platform": { "stage": "Intermediate", "category": "ops" },
     "React": { "stage": "Intermediate", "category": "programming_language" },
     "FastAPI": { "stage": "Intermediate", "category": "programming_language" },
-    "PostgreSQL": { "stage": "Intermediate", "category": "data" }
+    "PostgreSQL": { "stage": "Intermediate", "category": "data" },
+    "Tableau": { "stage": "Intermediate", "category": "data" },
+    "Power BI": { "stage": "Intermediate", "category": "data" },
+    "Pandas": { "stage": "Foundation", "category": "data" },
+    "Agile": { "stage": "Foundation", "category": "business" },
+    "Scrum": { "stage": "Intermediate", "category": "business" },
+    "Azure": { "stage": "Intermediate", "category": "ops" },
+    "Linux": { "stage": "Foundation", "category": "ops" },
+    "Terraform": { "stage": "Advanced", "category": "ops" },
+    "Generative AI": { "stage": "Advanced", "category": "ml_ai" },
+    "Feature Engineering": { "stage": "Intermediate", "category": "ml_ai" },
+    "Model Evaluation": { "stage": "Intermediate", "category": "ml_ai" }
   },
   "edges": [
     ["Python", "ML Fundamentals"],
@@ -44,9 +55,7 @@
     ["Deep Learning", "Computer Vision"],
     ["Python", "MLOps"],
     ["ML Fundamentals", "MLOps"],
-    ["Docker", "Kubernetes"],
-    ["Docker", "MLOps"],
-    ["Docker", "CI/CD"],
+    ["Kubernetes", "MLOps"],
     ["Excel", "Business Analytics"],
     ["Excel", "Financial Modeling"],
     ["SQL", "Data Analysis"],
@@ -61,7 +70,20 @@
     ["AWS", "Kubernetes"],
     ["Communication", "Stakeholder Management"],
     ["Project Management", "Stakeholder Management"],
-    ["Communication", "Leadership"]
+    ["Communication", "Leadership"],
+    ["Python", "Pandas"],
+    ["Pandas", "Data Analysis"],
+    ["ML Fundamentals", "Feature Engineering"],
+    ["ML Fundamentals", "Model Evaluation"],
+    ["ML Fundamentals", "Generative AI"],
+    ["Deep Learning", "Generative AI"],
+    ["Agile", "Scrum"],
+    ["Scrum", "Project Management"],
+    ["Linux", "Docker"],
+    ["Data Analysis", "Tableau"],
+    ["Data Analysis", "Power BI"],
+    ["Docker", "Azure"],
+    ["Docker", "Terraform"]
   ],
   "leaf_fallback": true
 }

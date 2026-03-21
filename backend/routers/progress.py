@@ -32,9 +32,17 @@ async def get_progress(
     verify_user_access(user_id, current_user)
 
     # ── Quiz attempts ─────────────────────────────────────────────────────────
+    # Get current pathway skills first
+    pathway = db.query(Pathway).filter(Pathway.user_id == user_id).first()
+    steps = pathway.steps if pathway else []
+    current_skills = {s.get("skill") for s in steps}
+
     attempts = (
         db.query(QuizAttempt)
-        .filter(QuizAttempt.user_id == user_id)
+        .filter(
+            QuizAttempt.user_id == user_id,
+            QuizAttempt.skill_id.in_(current_skills)
+        )
         .order_by(QuizAttempt.attempted_at)
         .all()
     )
@@ -99,6 +107,14 @@ async def get_progress(
         "streak_days":       0,   # add after "completed"
         "total_study_hours": round(len([a for a in attempts if a.skill_id in {s.get("skill") for s in steps}]) * 0.5, 1),
         "quiz_pass_rate":    round(len([a for a in attempts if a.action == "PASS"]) / len(attempts) * 100) if attempts else 0,
-        "skill_radar":       [],
+        "skill_radar": [
+            {
+                "skill": s.get("skill", ""),
+                "current": max(5, round((s.get("latest_quiz_score") or s.get("knowledge_state") or 0) * 100)),
+                "target": 100,
+            }
+            for s in steps
+            if s.get("skill")
+        ],
         "score_timeline":    score_history,  # alias so frontend score_timeline works
     }

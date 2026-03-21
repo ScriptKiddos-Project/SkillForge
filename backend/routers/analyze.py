@@ -120,10 +120,16 @@ async def _run_pipeline(job_id: str, user_id: str, resume_text: str, jd_text: st
 
         try:
             from agents.architect import build_pathway
+            # Include resume skills as KNOWN (1.0) so prerequisites already known are skipped
             knowledge_states = {
+                s["name"]: 1.0
+                for s in skills["resume_skills"]
+            }
+            # Then overlay actual gap knowledge states (these are lower, 0.0–0.79)
+            knowledge_states.update({
                 s["name"]: s.get("knowledge_state", 0.0)
                 for s in gap_result["gap_skills"]
-            }
+            })
             pathway_steps = await build_pathway(
                 gap_skills=gap_result["gap_skills"],
                 knowledge_states=knowledge_states,

@@ -83,7 +83,7 @@ extract_skills_from_texts = analyze
 def _confirm_low_confidence(skills: list[dict], onet_names: list[str]) -> list[dict]:
     confirmed: list[dict] = []
     for skill in skills:
-        if skill["confidence"] >= 0.80:
+        if skill["confidence"] >= 0.75:
             confirmed.append(skill)
             continue
         prompt   = CONFIRM_PROMPT.format(
