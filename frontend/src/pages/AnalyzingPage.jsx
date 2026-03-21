@@ -118,7 +118,7 @@ export default function AnalyzingPage() {
       if (stageIdx < SSE_STAGES.length) { setCurrentStage(stageIdx); stageIdx++ }
       else {
         clearInterval(stageInterval); clearInterval(logInterval)
-        setDone(true); setTimeout(() => navigate('/dashboard'), 1500)
+        setDone(true); setTimeout(() => navigate('/dashboard?demo_done=true'), 1500)
       }
     }, 1800)
     return () => { clearInterval(logInterval); clearInterval(stageInterval) }
@@ -177,7 +177,7 @@ export default function AnalyzingPage() {
 
         <div className="terminal-panel rounded-lg p-4 h-40 overflow-y-auto">
           <div className="space-y-0.5">
-            {logs.map((log, i) => (
+            {logs.filter(Boolean).map((log, i) => (
               <div key={i} className="text-xs font-mono"
                 style={{ color: log.includes('COMPLETE') || log.includes('✓') ? '#00ff88' : log.includes('ERROR') ? '#f87171' : log.includes('WARNING') ? '#fbbf24' : '#4b5563' }}>
                 {log}
