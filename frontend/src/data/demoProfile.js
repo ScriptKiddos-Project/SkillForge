@@ -239,6 +239,7 @@ export const demoQuizQuestions = {
 
 export const demoProgress = {
   overall_completion: 43,
+  pct: 43,
   quiz_pass_rate: 75,
   total_study_hours: 18.5,
   streak_days: 7,
@@ -250,6 +251,11 @@ export const demoProgress = {
     { date: 'Fri', score: 87, topic: 'System Design' },
     { date: 'Sat', score: 65, topic: 'Docker (retry)' },
     { date: 'Sun', score: 82, topic: 'React' },
+  ],
+  attempts_table: [
+    { skill: 'System Design Fundamentals', date: new Date().toISOString(), score: 0.87, action: 'PASS' },
+    { skill: 'Docker & Containerization', date: new Date().toISOString(), score: 0.58, action: 'REVISE' },
+    { skill: 'Docker & Containerization', date: new Date().toISOString(), score: 0.42, action: 'REVISE' },
   ],
   skill_radar: [
     { skill: 'React', current: 85, target: 95 },

@@ -62,15 +62,11 @@ export default function ProgressPage() {
   const { user, isDemo } = useAuthStore();
   const [progress, setProgress] = useState(null);
 
-  const isDemoMode = () =>
-    new URLSearchParams(window.location.search).get("demo") === "true";
-
   useEffect(() => {
-    if (isDemo || isDemoMode()) {
-      setProgress(demoProgress);
-      return;
-    }
-    if (!user?.id) return;
+  if (isDemo) {
+    setProgress(demoProgress);
+    return;
+  }
 
     // Always refetch pathway on progress page to get latest quiz scores
     api

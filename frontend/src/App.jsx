@@ -21,18 +21,21 @@ import NotFoundPage from './pages/NotFoundPage'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 
 function DemoLoader() {
-  const { setDemo } = useAuthStore()
-  const { setPathway, setSkillProfile, setChatHistory } = usePathwayStore()
+  const { setDemo, isDemo } = useAuthStore()
+  const { setPathway, setSkillProfile, setChatHistory, pathway } = usePathwayStore()
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('demo') === 'true') {
-      setDemo(demoUser, demoUser.token)
+  // Run synchronously before first render — no useEffect
+  const params = new URLSearchParams(window.location.search)
+  const isDemoUrl = params.get('demo') === 'true'
+  
+  if (isDemoUrl || isDemo) {
+    setDemo(demoUser, demoUser.token)
+    if (!pathway) {
       setPathway(demoPathway)
       setSkillProfile(demoSkillProfile)
       setChatHistory(demoChatHistory)
     }
-  }, [])
+  }
 
   return null
 }

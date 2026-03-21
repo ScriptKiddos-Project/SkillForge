@@ -1,144 +1,194 @@
-# SkillForge Frontend
+🚀 SkillForge
+Autonomous Skill Intelligence & Adaptive Learning Engine
 
-**Autonomous Skill Intelligence & Adaptive Learning Engine**  
-ARTPARK CodeForge Hackathon · Winning Build v4.0
+“We didn’t build another learning platform. We built a system that learns how you learn.”
 
----
+🧠 Executive Summary
 
-## Quick Start
+SkillForge is an AI-powered adaptive learning engine that transforms static onboarding into a personalized, intelligent, and validated learning journey.
 
-```bash
-cd frontend
+By combining NLP-based skill extraction, category-aware gap analysis, DAG-based learning pathways, and a performance-driven progression system, SkillForge ensures that users learn exactly what they need — no more, no less.
+
+Unlike traditional platforms, SkillForge doesn’t just recommend content — it verifies understanding, adapts in real-time, and explains every decision.
+
+❌ Problem
+
+Traditional onboarding and learning systems:
+
+Follow one-size-fits-all approach
+Lack personalization
+Do not verify knowledge
+Waste time on irrelevant content
+💡 Solution
+
+SkillForge introduces an end-to-end intelligent pipeline:
+
+📄 Extract skills from Resume (NLP + O*NET)
+🧠 Parse Job Description requirements
+📊 Perform semantic skill gap analysis
+🔗 Generate dependency-aware learning path (DAG)
+📚 Recommend curated learning resources (FAISS)
+📝 Validate learning using quizzes
+🔁 Adapt dynamically using performance
+🔥 Key Innovations
+🧩 Category-Aware Skill Gap Analysis (prevents false matches like Java ≠ JavaScript)
+🔗 DAG-Based Learning Pathway Generation
+🔁 PASS / REVISE / RETRY Adaptive Engine
+🧠 Explainable AI (Reasoning Traces)
+⚡ Real-Time Pipeline (SSE Streaming)
+💬 Stateful Mentor Chat (LLM-powered)
+🏗️ System Architecture
+Frontend (React + Vite)
+        ↓
+FastAPI Backend (Async APIs + SSE)
+        ↓
+AI Agents Layer
+(Analyzer, Evaluator, Architect, Curator, Mentor)
+        ↓
+Adaptive Engine (DAG + Knowledge Gating)
+        ↓
+Data Layer (FAISS + Skill Graph + Course Catalog)
+        ↓
+PostgreSQL Database
+🔄 User Flow
+User signs up / logs in
+Uploads Resume + Job Description
+Clicks Analyze
+System processes:
+Skill extraction
+Gap analysis
+Pathway generation
+Resource mapping
+Dashboard shows:
+Skill gaps
+Learning path
+Current topic
+User studies resources → takes quiz
+Adaptive engine decides:
+✅ PASS → move forward
+🔁 REVISE → fix weak areas
+🔄 RETRY → relearn basics
+Mentor Chat assists continuously
+⚙️ Tech Stack
+🖥️ Frontend
+React.js + Vite
+Tailwind CSS
+shadcn/ui
+Recharts
+React Flow
+⚙️ Backend
+Python + FastAPI
+SQLAlchemy ORM
+Async architecture
+🤖 AI / ML
+LLaMA 3.1 (Groq API)
+spaCy (NLP extraction)
+Sentence Transformers (MiniLM)
+FAISS (Vector Database)
+NetworkX (Graph-based logic)
+🗄️ Database
+PostgreSQL
+🧠 Core Adaptive Logic
+Score ≥ 70%   → PASS (unlock next skill)
+Score 40–69%  → REVISE (target weak subtopic)
+Score < 40%   → RETRY (restart with basics)
+
+👉 Learning progression is earned, not assumed
+
+📊 Features
+Resume + JD intelligent parsing
+Semantic skill gap analysis
+Dependency-aware learning paths
+Real-time analysis (SSE)
+Quiz-based validation system
+Weak subtopic detection
+Explainable AI reasoning
+Mentor Chat (stateful)
+DAG visualization
+Demo mode (instant experience)
+📈 Evaluation Metrics
+Skill extraction accuracy
+Gap detection precision
+Learning pathway efficiency
+Quiz performance improvement rate
+Completion rate
+System latency
+🔐 Security & Reliability
+JWT-based authentication
+Endpoint-level authorization
+Row-level DB locking
+Input validation (file uploads)
+Fallback quiz system (no demo failure)
+Pre-seeded job data (no API dependency)
+🚀 Future Scope
+Fine-tuned domain-specific LLMs
+Integration with LinkedIn / Coursera
+Gamification (badges, streaks, leaderboards)
+Certification system
+Offline model support
+Enterprise onboarding integration
+🛠️ Setup Instructions (Without Docker)
+🔹 Clone Repository
+git clone https://github.com/ScriptKiddos-Project/SkillForge.git
+cd SkillForge/backend
+🔹 Create Virtual Environment
+python -m venv venv
+venv\Scripts\activate   # Windows
+
+# OR
+
+source venv/bin/activate   # Mac/Linux
+🔹 Install Dependencies
+pip install -r requirements.txt
+🔹 Download spaCy Model
+python -m spacy download en_core_web_sm
+🔹 Configure Environment Variables
+
+Create .env file:
+
+POSTGRES_USER=skillforge
+POSTGRES_PASSWORD=skillforge123
+POSTGRES_DB=skillforge
+POSTGRES_HOST=localhost
+
+SECRET_KEY=your_secret_key
+LLM_PROVIDER=groq
+GROQ_API_KEY=your_groq_api_key
+🔹 Setup Database
+python -c "from database import Base, engine; Base.metadata.create_all(engine)"
+🔹 Seed Job Data
+python -c "from routers.jds import fetch_and_seed_jds; from database import SessionLocal; fetch_and_seed_jds(SessionLocal())"
+🔹 Run Backend
+uvicorn main:app --reload --port 8000
+🔹 Run Frontend
+cd ../frontend
 npm install
 npm run dev
-```
+🌐 Access
+Frontend → http://localhost:5173
+Backend → http://localhost:8000
+API Docs → http://localhost:8000/docs
+🎯 Demo Mode
+http://localhost:5173?demo=true
 
-Visit `http://localhost:5173` — or append `?demo=true` to any URL for instant demo mode.
+👉 Instant full experience (no AI wait time)
 
-## Demo Mode
+👥 Team
 
-```
-http://localhost:5173/dashboard?demo=true
-```
+Team ScriptKiddos
 
-- Preloaded profile (Alex Chen — Senior Full-Stack Engineer)
-- Full pathway with 9 steps (PASS / REVISE / ACTIVE / LOCKED)
-- Working quiz (Docker & Containerization — 5 MCQs)
-- Stateful MentorChat with contextual demo replies
-- All charts and analytics populated
-- **Zero backend required**
+Sakshi Indrasen Singh
+Palak Niraj Upadhyay
+Rhitika Kapoorchand Vishwakarma
+🏆 Why SkillForge Stands Out
+Feature	Traditional Platforms	SkillForge
+Personalization	❌	✅
+Adaptive Learning	❌	✅
+Skill Gap Analysis	❌	✅
+Explainability	❌	✅
+Real-time Feedback	❌	✅
+🏁 Final Note
 
-## Tech Stack
+SkillForge is not just a project — it is a shift from passive learning systems to intelligent, adaptive skill evolution.
 
-| Tool | Purpose |
-|---|---|
-| React 18 + Vite | Framework |
-| Tailwind CSS | Styling |
-| Zustand | State management |
-| Axios | API layer + auth interceptor |
-| Recharts | SkillGapChart, ScoreTimeline, ProgressDonut, RadarChart |
-| react-flow | SkillDAGGraph (DAG visualization) |
-| framer-motion | Animations |
-
-## Folder Structure
-
-```
-src/
-├── App.jsx               # Routing + ProtectedRoute + DemoLoader
-├── main.jsx
-├── index.css             # Cyberpunk theme (CSS variables, glass cards, neon)
-├── store/
-│   ├── authStore.js      # Zustand: user, token, login/logout (persisted)
-│   └── pathwayStore.js   # Zustand: pathway, chatHistory, step updates
-├── lib/
-│   ├── api.js            # Axios instance + auth interceptor + SSE helper
-│   └── utils.js          # cn, scoreToColor, statusToColor, formatHours...
-├── data/
-│   └── demoProfile.js    # HARDCODED: demoUser, demoPathway, demoSkillProfile, demoChatHistory, demoQuizQuestions
-├── components/
-│   ├── layout/
-│   │   ├── Sidebar.jsx         # Icon-only sidebar with glow active state
-│   │   ├── Navbar.jsx          # Top bar with route label + actions
-│   │   ├── AppLayout.jsx       # Wrapper: Sidebar + Navbar + main
-│   │   └── ProtectedRoute.jsx  # JWT guard
-│   ├── charts/
-│   │   ├── SkillGapChart.jsx   # Bar chart with confidence % tooltip
-│   │   ├── ProgressDonut.jsx   # Neon donut with glow
-│   │   └── ScoreTimeline.jsx   # Area chart with PASS/REVISE thresholds
-│   ├── pathway/
-│   │   ├── SkillCard.jsx       # Step card with status badge + weak subtopics
-│   │   ├── ResourceList.jsx    # Resource rows with type icons
-│   │   ├── ReasoningPanel.jsx  # Explainer agent terminal panel
-│   │   └── PathwayTimeline.jsx # Vertical timeline with connector
-│   ├── graph/
-│   │   └── SkillDAGGraph.jsx   # react-flow DAG with custom SkillNode
-│   ├── quiz/
-│   │   ├── QuizModal.jsx       # Modal orchestrator: quiz → result
-│   │   ├── QuizQuestion.jsx    # MCQ with styled option buttons
-│   │   └── QuizResult.jsx      # PASS/REVISE/RETRY result + adaptive log
-│   ├── chat/
-│   │   └── MentorChat.jsx      # Terminal-style chat with typing indicator
-│   └── upload/
-│       ├── ResumeUpload.jsx    # PDF drag-drop zone
-│       └── JDInput.jsx         # 3-tab: paste | upload | RemoteOK
-└── pages/
-    ├── LandingPage.jsx    # Animated particle canvas + features grid
-    ├── LoginPage.jsx      # Auth form + demo button
-    ├── SignupPage.jsx      # Re-exports from LoginPage
-    ├── OnboardingPage.jsx  # 2-step: resume + JD (3 tabs)
-    ├── AnalyzingPage.jsx   # SSE stage display + terminal log
-    ├── DashboardPage.jsx   # Main hub: stats + gap chart + module card + table + chat
-    ├── PathwayPage.jsx     # Timeline / DAG toggle
-    ├── TopicPage.jsx       # Resources + reasoning + quiz trigger
-    ├── ProgressPage.jsx    # Charts + radar + quiz history table
-    ├── MentorChatPage.jsx  # Full-page chat with context sidebar
-    └── NotFoundPage.jsx    # Glitch 404
-```
-
-## Design System
-
-| Token | Value |
-|---|---|
-| `--neon-cyan` | `#00f5ff` |
-| `--neon-blue` | `#0066ff` |
-| `--neon-purple` | `#8b00ff` |
-| `--neon-green` | `#00ff88` |
-| `--dark-base` | `#020817` |
-| `--dark-card` | `#060e1f` |
-| Font Display | Orbitron |
-| Font Body | Rajdhani |
-| Font Mono | JetBrains Mono |
-
-### CSS Classes
-- `.glass-card` — dark glass with border
-- `.glass-card-cyan` — cyan glow border variant
-- `.btn-neon-solid` — gradient fill button
-- `.btn-neon-cyan` — outlined cyan button
-- `.neon-text-cyan` — cyan with text-shadow glow
-- `.terminal-panel` — dark monospace panel
-- `.neon-input` — dark input with focus glow
-- `.badge-pass` / `.badge-revise` / `.badge-retry` / `.badge-active` / `.badge-locked`
-
-## Environment Variables
-
-```env
-VITE_API_URL=http://localhost:8000
-```
-
-## Backend Integration
-
-All API calls use `src/lib/api.js` (Axios instance with JWT interceptor):
-
-| Endpoint | Description |
-|---|---|
-| `POST /auth/login` | Login → `{ user, token }` |
-| `POST /auth/register` | Signup → `{ user, token }` |
-| `POST /analyze` | Start analysis → `{ job_id }` |
-| `GET /analyze/stream/:job_id` | SSE stream → stages |
-| `GET /pathway/:user_id` | Get pathway |
-| `POST /chat` | Mentor chat → `{ reply }` |
-| `POST /quiz/:step_id/submit` | Submit quiz → `{ action, score }` |
-
----
-
-*ARTPARK CodeForge Hackathon · Team of 3 · Final Winning Build*
+“The future of learning is not content delivery — it is intelligent guidance.”
