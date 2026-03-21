@@ -5,6 +5,17 @@
 
 ---
 
+## Prerequisites
+
+| Tool | Version | Install |
+|---|---|---|
+| Python | 3.11+ | python.org |
+| Node.js | 18+ | nodejs.org |
+| PostgreSQL | 15+ | postgresql.org |
+| Git | Latest | git-scm.com |
+
+---
+
 ## Overview
 
 SkillForge is an AI-powered adaptive learning engine that transforms static onboarding into a personalized, intelligent, and validated learning journey.
@@ -29,7 +40,7 @@ Traditional onboarding and learning systems:
 
 SkillForge introduces an end-to-end intelligent pipeline:
 
-1. **Extract** skills from résumé (NLP + O*NET)
+1. **Extract** skills from résumé (NLP + O\*NET)
 2. **Parse** job description requirements
 3. **Analyze** semantic skill gaps
 4. **Generate** dependency-aware learning path (DAG)
@@ -49,6 +60,162 @@ SkillForge introduces an end-to-end intelligent pipeline:
 | 🧠 Explainable AI | Full reasoning traces for every decision |
 | ⚡ Real-Time Pipeline | Server-Sent Events (SSE) streaming |
 | 💬 Stateful Mentor Chat | LLM-powered conversational assistant |
+
+---
+
+## Setup (Without Docker)
+
+### Get a Groq API Key (Required)
+
+1. Go to https://console.groq.com
+2. Sign up — free, takes 2 minutes
+3. Create an API key
+4. Keep it ready for Step 5 below
+
+---
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/ScriptKiddos-Project/SkillForge.git
+cd SkillForge
+```
+
+---
+
+### 2. Set up the backend
+
+```bash
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate — Windows
+venv\Scripts\activate
+
+# Activate — macOS / Linux
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Download spaCy model
+python -m spacy download en_core_web_sm
+```
+
+---
+
+### 3. Configure backend environment variables
+
+Create a `.env` file inside the `backend/` directory:
+
+```env
+POSTGRES_USER=skillforge
+POSTGRES_PASSWORD=skillforge123
+POSTGRES_DB=skillforge
+POSTGRES_HOST=localhost
+
+SECRET_KEY=skillforge-secret-key-32chars-long
+LLM_PROVIDER=groq
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+> **Only `GROQ_API_KEY` needs to change.** Get it free at https://console.groq.com
+
+---
+
+### 4. Configure frontend environment variables
+
+Create a `.env` file inside the `frontend/` directory:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+---
+
+### 5. Set up the database
+
+Make sure PostgreSQL is running, then:
+
+```bash
+# From the backend/ directory
+python -c "from database import Base, engine; Base.metadata.create_all(engine)"
+```
+
+---
+
+### 6. Seed job data
+
+```bash
+python -c "from routers.jds import fetch_and_seed_jds; from database import SessionLocal; fetch_and_seed_jds(SessionLocal())"
+```
+
+> **Note:** Requires an internet connection. If it fails, the app still works — job data falls back to the pre-seeded `remote_jds_seed.json` file automatically.
+
+---
+
+### 7. Run the backend
+
+```bash
+# From the backend/ directory
+uvicorn main:app --reload --port 8000
+```
+
+---
+
+### 8. Run the frontend
+
+```bash
+# Open a new terminal
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## Access
+
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| Backend | http://localhost:8000 |
+| API Docs | http://localhost:8000/docs |
+
+---
+
+## Demo Mode
+
+```
+http://localhost:5173?demo=true
+```
+
+Instant full-experience walkthrough — no AI wait time, no resume upload required.
+
+> **Tip for judges:** Start with Demo Mode first for an instant overview of all features.
+>
+> For the full adaptive experience, sign up with a real account and use:
+> - Any tech résumé PDF
+> - A Machine Learning Engineer or Full Stack Developer job description
+>
+> The system will generate a personalized pathway in ~30 seconds.
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `spaCy model not found` | Run `python -m spacy download en_core_web_sm` inside the venv |
+| `FAISS index error` | Delete `data/faiss.index` — rebuilds automatically on next startup |
+| `Frontend API errors` | Ensure `frontend/.env` has `VITE_API_URL=http://localhost:8000` |
+| `Groq API timeout` | Verify `GROQ_API_KEY` in `backend/.env` — get free key at console.groq.com |
+| `sentence-transformers slow first run` | Downloads ~80MB model on first run — wait for completion |
+| `Port already in use` | Kill process: `lsof -i :8000` or `lsof -i :5173`, then retry |
+| `Database connection error` | Ensure PostgreSQL is running and credentials match `backend/.env` |
+| `RemoteOK seed fails` | Safe to ignore — app falls back to local seed file automatically |
 
 ---
 
@@ -107,14 +274,19 @@ PostgreSQL Database
 - Async architecture
 
 ### AI / ML
-- LLaMA 3.1 (Groq API)
-- spaCy (NLP extraction)
-- Sentence Transformers (MiniLM)
-- FAISS (vector database)
-- NetworkX (graph-based logic)
+- LLaMA 3.1 via Groq API
+- spaCy `en_core_web_sm` — NLP skill extraction
+- Sentence Transformers `all-MiniLM-L6-v2` — semantic embeddings
+- FAISS — vector similarity search over course catalog
+- NetworkX — DAG-based skill graph and topological sort
 
 ### Database
-- PostgreSQL
+- PostgreSQL with JSONB pathway storage and row-level locking
+
+### Datasets Used
+- O\*NET Skill Taxonomy — https://www.onetcenter.org/db_releases.html
+- RemoteOK Public API — https://remoteok.com/api
+- Custom curated course catalog (100+ entries across all skill domains)
 
 ---
 
@@ -133,108 +305,30 @@ PostgreSQL Database
 
 ---
 
+## Adaptive Logic (Original Implementation)
+
+The core adaptive engine is entirely original — no library or pre-trained model makes the progression decisions.
+
+**Three mechanisms:**
+
+1. **Category-Aware Knowledge State** — cosine similarity computed only between skills in the same domain category, preventing false matches like Java scoring against JavaScript
+
+2. **Prerequisite-Aware DAG** — NetworkX directed acyclic graph ensures correct learning order (Statistics → ML Fundamentals → Deep Learning) for any resume and JD combination
+
+3. **PASS / REVISE / RETRY Gating** — quiz performance determines path advancement; REVISE identifies the specific weak subtopic from wrong answers; RETRY reloads beginner resources; PASS unlocks the next DAG node with row-level DB locking
+
+> Pre-trained models handle perception. Our original algorithm handles cognition.
+
+---
+
 ## Security & Reliability
 
 - JWT-based authentication
 - Endpoint-level authorization
-- Row-level database locking
+- Row-level database locking on pathway updates
 - Input validation for file uploads
-- Fallback quiz system (no demo failure)
-- Pre-seeded job data (no external API dependency)
-
----
-
-## Setup (Without Docker)
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/ScriptKiddos-Project/SkillForge.git
-cd SkillForge/backend
-```
-
-### 2. Create a virtual environment
-
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# macOS / Linux
-python -m venv venv
-source venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Download the spaCy model
-
-```bash
-python -m spacy download en_core_web_sm
-```
-
-### 5. Configure environment variables
-
-Create a `.env` file in the `backend/` directory:
-
-```env
-POSTGRES_USER=skillforge
-POSTGRES_PASSWORD=skillforge123
-POSTGRES_DB=skillforge
-POSTGRES_HOST=localhost
-
-SECRET_KEY=your_secret_key
-LLM_PROVIDER=groq
-GROQ_API_KEY=your_groq_api_key
-```
-
-### 6. Set up the database
-
-```bash
-python -c "from database import Base, engine; Base.metadata.create_all(engine)"
-```
-
-### 7. Seed job data
-
-```bash
-python -c "from routers.jds import fetch_and_seed_jds; from database import SessionLocal; fetch_and_seed_jds(SessionLocal())"
-```
-
-### 8. Run the backend
-
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-### 9. Run the frontend
-
-```bash
-cd ../frontend
-npm install
-npm run dev
-```
-
----
-
-## Access
-
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:5173 |
-| Backend | http://localhost:8000 |
-| API Docs | http://localhost:8000/docs |
-
-### Demo Mode
-
-```
-http://localhost:5173?demo=true
-```
-
-Instant full-experience walkthrough — no AI wait time required.
+- Fallback quiz system — demo never breaks
+- Pre-seeded job data — no external API dependency during demo
 
 ---
 
@@ -247,6 +341,7 @@ Instant full-experience walkthrough — no AI wait time required.
 | Skill Gap Analysis | ❌ | ✅ |
 | Explainability | ❌ | ✅ |
 | Real-time Feedback | ❌ | ✅ |
+| Knowledge Verification | ❌ | ✅ |
 
 ---
 
